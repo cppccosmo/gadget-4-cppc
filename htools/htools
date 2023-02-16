@@ -1,0 +1,93 @@
+#!/bin/bash
+
+############################################################################################
+
+OPT=$1                          # 'start'           (MFLR/Hybrid)
+                                # 'restart'         (Hybrid only)
+                                # 'postprocess'     (SuperEasyLR/MFLR/Hybrid)
+
+SimFolder='output'              # Output of simulation to consider 
+ClassFile='nu'                  # .ini file for class, from folder inifiles,                
+MfIn='MuFLR_params'             # Generates MuFLR input file, placed in inifiles,           
+MfOut='MuFLR_out'               # Output of MuFLR result, will go in raw_files,              
+PrintOpt=0                      # Print options. 0: D_cb, f, neutrino density,                
+zi=200.0                        # Initial redshift for MuFLR,                                
+zf=49.0                         # Output redshift (gadget4 initial redshift),               
+
+# Opts for preprocessing
+PkOut='PowerSpectrum'           # Filename for PowerSpectrumFile in param.txt,              
+GFOut='GrowthRate'              # Filename for GrowthRateFile in param.txt,                 
+CBOut='CBPowerSpectrum'         # Filename for CBPowerSpectrumFile in param.txt,                  
+
+snap_number=1                   # Select a snapshot to restart from or postprocess           
+aRes=0.198                      # Scale factor for Hybrid restart, .3f format!              
+iStream=0                       # First stream to covert                      
+Streams=10                      # Streams to convert                  
+mass=0.31                       # Neutrino mass in eV                                        
+
+# Opts  for postprocessing
+pindex=0                        # 0: Projection plot to choose                         
+                                # 1: Powerspectrum              
+                                # 2: Velocity power spectra             
+
+ptype=1                         # Particle type
+
+############################################################################################
+ 
+cdir=$(pwd)
+
+case $OPT in
+
+    start) 
+    echo 'Prepart start of simulation' 
+    mkdir -p start_files
+    ClassOut=start_files/$ClassFile'_pk'              
+
+    echo 'Running Class ...'
+    echo ''                >> log.txt
+    echo 'Class output'    >> log.txt
+    ./class $ClassFile.ini >> log.txt
+
+    echo 'Creating MuFLR input file' $MfIn '...'
+    python3 scripts/mf_file.py -in $ClassFile -ou $MfIn -zi $zi -zf $zf -pf $PrintOpt
+    
+    echo 'Running MuFLR ...'
+    ./MuFLR   $MfIn.txt > $MfOut.txt  
+    
+    echo 'Setting files for Gadget ...'
+    python3 scripts/pre_start.py -ic $ClassOut -im $MfOut --out_pk $PkOut --out_gr $GFOut 
+    echo 'Files' $PkOut 'and' $GFOut 'are ready!'
+    ;;
+    
+    restart) 
+    echo 'Restart Hybrid simulation in folder' $SimFolder
+
+    NuDelta=$SimFolder/neutrino_stream_data/neutrino_delta_stream_$aRes.csv
+    NuTheta=$SimFolder/neutrino_stream_data/neutrino_theta_stream_$aRes.csv
+    PowerSpectrum=$SimFolder/powerspecs/powerspec_00$snap_number.txt
+    
+    python3 scripts/pre_restart.py -sf $SimFolder -pk $PkOut -gr $GFOut -cb $CBOut -id $NuDelta -it $NuTheta -icb $PowerSpectrum -str $Stream -Ns $NumStreams
+    
+    #c=299792458
+    #tau=$(sed -n '1p' $SimFolder/$MfOut.txt | awk '{print $4}')
+    #Stream_Vel=$(echo "$tau/$mass*$c/1000 " | bc -l)
+    #echo 'Set stream velocity in the param.txt file as '$Stream_Vel '(km/s)'
+    
+    ;;
+
+    postprocess)
+    mkdir -p postprocess 
+    mkdir -p postprocess/plots postprocess/spectra postprocess/render
+    echo 'Post-processing simulation from folder' $SimFolder
+    case $pindex in
+        0)
+            python3 scripts/post.py -ot $OPT -pt $ptype
+            #python3 scripts/post.py -k post_sim -ot $OPT -sf $SimFolder -pp $pindex -sa $snap_number 
+        ;;
+        1)
+            #python3 scripts/spectrum.py -k post_sim -ot $OPT -sf $SimFolder -pp $pindex -sa $snap_number 
+        ;;
+    esac
+    ;;
+esac
+

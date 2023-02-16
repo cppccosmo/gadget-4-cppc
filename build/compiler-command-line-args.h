@@ -1,0 +1,1 @@
+static const char *compiler_flags="mpicxx  -std=c++11  -ggdb -O3 -march=native  -Wall -Wno-format-security    -I/apps/hdf5/1.8.21-threadsafe/include -I/apps/gsl/2.6/include -I/apps/fftw/3.3.8/include    -Ibuild -Isrc";

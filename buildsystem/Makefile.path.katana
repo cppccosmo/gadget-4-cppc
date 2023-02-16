@@ -1,0 +1,8 @@
+GSL_INCL   = -I/apps/gsl/2.6/include
+GSL_LIBS   = -L/apps/gsl/2.6/lib
+FFTW_INCL  = -I/apps/fftw/3.3.8/include
+FFTW_LIBS  = -L/apps/fftw/3.3.8/lib
+HDF5_INCL  = -I/apps/hdf5/1.8.21-threadsafe/include
+HDF5_LIBS  = -L/apps/hdf5/1.8.21-threadsafe/lib
+HWLOC_INCL =
+HWLOC_LIBS =

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#PBS -l select=4:ncpus=32:mem=95gb:mpiprocs=32
+##PBS -l ib=yes
+#PBS -l walltime=24:00:00
+#PBS -N massivenu
+
+module purge
+module add intel/2020.0.088
+module add openmpi/4.0.3
+module add gsl
+module add gcc
+module add fftw
+module add hdf5/1.8.21-threadsafe
+
+cd $PBS_O_WORKDIR
+
+mpirun -np 128 ./Gadget4-start param.txt | tee simlog.txt
