@@ -19,8 +19,13 @@ Documentation
 =============
 
 For documentation of the code, please refer
-to the main papers ...
+to the main papers:
 
+- *Joe Zhiyu Chen, Markus R. Mosbech, Amol Upadhye, Yvonne Y.Y. Wong*, Hybrid multi-fluid-particle simulations of the cosmic neutrino background,     [2210.16012](https://arxiv.org/abs/2210.16012) 
+- *Joe Zhiyu Chen, Amol Upadhye, Yvonne Y.Y. Wong*, The cosmic neutrino background as a collection of fluids in large-scale structure simulations,     [2011.12503](https://arxiv.org/abs/2011.12503) 
+- *Joe Zhiyu Chen, Amol Upadhye, Yvonne Y.Y. Wong*, One line to run them all: SuperEasy massive neutrino linear response in N-body simulations, [    2011.12504](https://arxiv.org/abs/2011.12504) 
+
+A documentation on the GADGET-4 integration of the methods is under development.
 
 Installation and Dependencies 
 =============
