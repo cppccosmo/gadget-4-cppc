@@ -32,4 +32,15 @@ Installation and Dependencies
 
 ```
 git clone https://github.com/cppccosmo/gadget-4-cppc.git
+cd gadget-4-cppc
+bash hsetup.sh LR /path/to/sim/folder
 ```
+
+To compile the code and run a typical simulation you will need the following libraries:
+
+- Working C/C++ compilers (for GNU version 4.x or later)
+- GNU Scientific Library ([GSL](https://www.gnu.org/software/gsl/))
+- Fastest Fourier Transform in the West ([FFTW3](http://www.fftw.org/)) 
+- Hierarchical Data Format ([HDF5](https://www.hdfgroup.org/solutions/hdf5/))
+- Message Passing Interface (MPI), version 3.0 or higher. Examples are [Intel-MPI](https://www.intel.com/content/www/us/en/developer/tools/oneapi/mpi-library.html), [OpenMPI](https://www.open-mpi.org/), [MPICH](https://www.mpich.org/) 
+
