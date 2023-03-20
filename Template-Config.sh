@@ -7,8 +7,8 @@
 
 #--------------------------------------- Basic operation mode of code
 
-#PERIODIC                                     # enables periodic boundary condistions
-#NTYPES=6                                     # number of particle types 
+PERIODIC                                     # enables periodic boundary condistions
+NTYPES=6                                     # number of particle types 
 #RANDOMIZE_DOMAINCENTER                       # shifts the particle distribution randomly each step to reduce correlations of force errors in time
 #LEAN                                         # selects a special 'lean' mode of code operation, which is optimized for aggressive memory saving
 #LONG_X_BITS=2                                # can be used to reduce periodic box-dimension in x-direction relative to nominal box size
@@ -35,7 +35,7 @@ SELFGRAVITY                                   # switch to enable self-gravity of
 
 #--------------------------------------- TreePM Options
 
-#PMGRID=512                                   # basic mesh size for TreePM calculations
+PMGRID=512                                   # basic mesh size for TreePM calculations
 #ASMTH=1.25                                   # sets the smoothing of the PM force and thus the split-scale between Tree/FMM force and PM force
 #RCUT=6.0                                     # cut-off radius beyond which Tree or FMM evaluations are stopped in TreePM / FMM-PM
 #NTAB=128                                     # size of short-range look-up table
@@ -128,7 +128,7 @@ DOUBLEPRECISION=1                             # if activated and set to 1, use d
 #POWERSPEC_ON_OUTPUT                          # computes a matter power spectrum when the code writes a snapshot output
 #ALLOW_HDF5_COMPRESSION                       # applies HDF5 loss-less compression to selected output fields
 #REDUCE_FLUSH                                 # do not flush the I/O streams of the log-files every system step
-#CB_VELDIV				      # output velocity divergence for CDM/Baryon particles
+#CB_VELDIV				                      # output velocity divergence for CDM/Baryon particles
 
 
 #---------------------------------------- On the fly FOF groupfinder
@@ -170,16 +170,19 @@ DOUBLEPRECISION=1                             # if activated and set to 1, use d
 #NGENIC=256                                   # generate cosmological ICs, set NGENIC to the FFT grid size used for IC generation
 #NGENIC_2LPT                                  # applies 2LPT instead of just Zeldovich approximation
 #CREATE_GRID                                  # start with a regular Cartesian DM particle grid, instead of reading a glass file (for NGENIC)
-#ADDITIONAL_GRID			      # adds additional particles to the IC read by a restart run, used in hybrid neutrino simulations
-#THERMAL_VEL_IC				      # adds a random thermal velocity to IC particles
-#CB_PHASE				      # use the phase from the restart snapshot to initialise the density field instead of the random seed
-#MFLR_RST				      # read in multifluid perturbations from file rather than initialise from linear theory
+#ADDITIONAL_GRID			                  # adds additional particles to the IC read by a restart run, used in hybrid neutrino simulations
+#THERMAL_VEL_IC				                  # adds a random thermal velocity to IC particles
+#CB_PHASE				                      # use the phase from the restart snapshot to initialise the density field instead of the random seed
+#MFLR_RST				                      # read in multifluid perturbations from file rather than initialise from linear theory
 #GENERATE_GAS_IN_ICS                          # add SPH particles to created or read dark matter only ICs
 #SPLIT_PARTICLE_TYPE=4+8                      # specifies particle types to be split if GENERATE_GAS_IN_ICS is activated
 #NGENIC_FIX_MODE_AMPLITUDES                   # when activated, this leaves the mode amplitudes at sqrt(P(k)), instead of sampling from a Rayleigh distribution
 #NGENIC_MIRROR_PHASES                         # if this is activated, all phases are turned by 180 degrees
 #NGENIC_TEST                                  # can be used to create ICs, measure the power spectrum, and then stop
 
+#---------------------------------------- Multi-Fluid options
+N_TAU=30                                      # Number of momenta (flows) in the multifluid calculation
+N_MU=20                                       # Number of Legendre multipole moments in the multifluid calculation
 
 #----------------------------------------Parallelization options
 

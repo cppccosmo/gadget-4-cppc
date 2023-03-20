@@ -1,0 +1,26 @@
+#!/bin/bash
+
+#PBS -l select=1:ncpus=16:mem=5gb
+#PBS -l walltime=1:00:00
+#PBS -N pre
+
+module purge
+module load gcc gsl
+
+export $OMP_NUM_THREADS=16
+
+cd $PBS_O_WORKDIR
+
+####################################################
+# Start/restart
+####################################################
+
+./htools start
+#./htools restart
+
+####################################################
+# Post-processing
+####################################################
+
+#source /srv/scratch/cppcnbody/py_venv/bin/activate
+#./htools postprocess 

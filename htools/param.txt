@@ -104,17 +104,10 @@ Seed                                              2827492
 SphereMode                                        1
 PowerSpectrumType                                 2
 ReNormalizeInputSpectrum                          0
-PrimordialIndex                                   1.0                    % it shouldn't be tilted!
+PrimordialIndex                                   1.0   
 ShapeGamma                                        0.21
 Sigma8                                            0.8
-%CBPowerSpectrumFile				              CBPowerSpectrum.txt 
-PowerSpectrumFile                                 PowerSpectrum.txt
-GrowthRateFile                                    GrowthRate.txt
+PowerSpectrumFile                                 TEMPLATE_POWERSPECTRUM
+GrowthRateFile                                    TEMPLATE_GROWTHRATE
 InputSpectrum_UnitLength_in_cm                    3.085678e24
-%stream_vel					                      295.087                % km / s comoving velocity for the stream you are converting 
-%N_tau_part					                      1                      %total number of neutrino batches that have been converted, including the one you are converting now.
-%Nu_part_deg					                  2                      %how many multifluid streams does each N_tau_part represent
 
-%------ conversion package
-%ynuFile						                  ../LinResp/output/y_nu/y_nu_0.100.dat
-%deltagridFILE					                  ../LinResp/output/delta_grid/delta_grid_0.100.dat

@@ -1,72 +1,130 @@
 #!/bin/bash
 
 ############################################################################################
+# Main options
+OPT=$1                           # 'start'           (LR/GLR/MF/HYB)
+                                 # 'restart'         (MF/HYB)
+                                 # 'postprocess'     (LR/GLR/MF/HYB)
 
-OPT=$1                          # 'start'           (MFLR/Hybrid)
-                                # 'restart'         (Hybrid only)
-                                # 'postprocess'     (SuperEasyLR/MFLR/Hybrid)
+SIMFOLDER='output'               # Output of simulation to consider 
 
-SimFolder='output'              # Output of simulation to consider 
-ClassFile='nu'                  # .ini file for class, from folder inifiles,                
-MfIn='MuFLR_params'             # Generates MuFLR input file, placed in inifiles,           
-MfOut='MuFLR_out'               # Output of MuFLR result, will go in raw_files,              
-PrintOpt=0                      # Print options. 0: D_cb, f, neutrino density,                
-zi=200.0                        # Initial redshift for MuFLR,                                
-zf=49.0                         # Output redshift (gadget4 initial redshift),               
+# Cosmology --------------------------------------------------------------------------------
 
-# Opts for preprocessing
-PkOut='PowerSpectrum'           # Filename for PowerSpectrumFile in param.txt,              
-GFOut='GrowthRate'              # Filename for GrowthRateFile in param.txt,                 
-CBOut='CBPowerSpectrum'         # Filename for CBPowerSpectrumFile in param.txt,                  
+COSMO_MODEL=nu05                 # Cosmology model
+COSMO_NS=0.9665                  # Primordial spectral index n_s
+COSMO_SIG8=0.7139                # Sigma8
+COSMO_H0=0.6766                  # Hubble paramter today in units of 100 km/s/Mpc
+COSMO_OM=0.309641441545506       # Omega_m for all matter
+COSMO_OB=0.0489746816186967      # Omega_b for baryons
+COSMO_OH=0.0109220967035452      # Omega_h for the HDM component
+COSMO_TCMBK=2.7255               # CMB temperature today in K
+COSMO_THDMK=1.95280830923360     # HDM component temperature today in K
+COSMO_FHDM=psd/f_fd0.dat         # HDM distribution function to pass for GLR
+COSMO_GHDM=3.044                 # Neff for the HDM component
+COSMO_W0=-1.0                    # Dark energy equation of state 
+COSMO_WA=0.0                     # ??
 
-snap_number=1                   # Select a snapshot to restart from or postprocess           
-aRes=0.198                      # Scale factor for Hybrid restart, .3f format!              
-iStream=0                       # First stream to covert                      
-Streams=10                      # Streams to convert                  
-mass=0.31                       # Neutrino mass in eV                                        
+# Class ------------------------------------------------------------------------------------
 
-# Opts  for postprocessing
-pindex=0                        # 0: Projection plot to choose                         
-                                # 1: Powerspectrum              
-                                # 2: Velocity power spectra             
+CLASS_RES=0                      # Class precision 0: Low, 1: High
 
-ptype=1                         # Particle type
+# Multifluid -------------------------------------------------------------------------------
+
+OUTPUT_Z="99 19 9 5 0"
+OUTPUT_NL=0
+OUTPUT_PRINT=2
+
 
 ############################################################################################
+# TO DO
+
+#MfIn='MuFLR_params'             # Generates MuFLR input file, placed in inifiles,           
+#MfOut='MuFLR_out'               # Output of MuFLR result, will go in raw_files,              
+#PrintOpt=0                      # Print options. 0: D_cb, f, neutrino density,                
+
+# Opts for preprocessing
+#PkOut='PowerSpectrum'           # Filename for PowerSpectrumFile in param.txt,              
+#GFOut='GrowthRate'              # Filename for GrowthRateFile in param.txt,                 
+#CBOut='CBPowerSpectrum'         # Filename for CBPowerSpectrumFile in param.txt,                  
+
+#snap_number=1                   # Select a snapshot to restart from or postprocess           
+#aRes=0.198                      # Scale factor for Hybrid restart, .3f format!              
+#iStream=0                       # First stream to covert                      
+#Streams=10                      # Streams to convert                  
+#mass=0.31                       # Neutrino mass in eV                                        
+
+# Opts  for postprocessing
+#pindex=0                        # 0: Projection plot 
+                                # 1: Power spectra (delta, velocity, momentum) per ptype
+                                # 2: Neutrino combined spectra 
+
+#ptype=1                         # Particle type
+
+############################################################################################
+############################################################################################
  
+
 cdir=$(pwd)
 
 case $OPT in
 
-    start) 
-    echo 'Prepart start of simulation' 
-    mkdir -p start_files
-    ClassOut=start_files/$ClassFile'_pk'              
+    start)
 
-    echo 'Running Class ...'
-    echo ''                >> log.txt
-    echo 'Class output'    >> log.txt
-    ./class $ClassFile.ini >> log.txt
-
-    echo 'Creating MuFLR input file' $MfIn '...'
-    python3 scripts/mf_file.py -in $ClassFile -ou $MfIn -zi $zi -zf $zf -pf $PrintOpt
+    EXEC_CLASS=./class
+    EXEC_MF=./MuFLR
     
+    CLASS_ROOT=$(grep 'root' class_template.ini | sed -n 1p | awk '{print $3}' | awk -F"/" '{print $1}')
+    mkdir -p $CLASS_ROOT
+    
+    echo 'Starting simulation with model' $COSMO_MODEL 
+    source scripts/cosmofiles.sh  $CLASS_RES # Create mf file, modify .ini and param.txt files to match cosmology 
+    
+    echo 'Running class ...'
+    (time ${EXEC_CLASS} input_class_${COSMO_MODEL}.ini) >& info/output_class_${COSMO_MODEL}.txt
+    echo 'Done!'
+
     echo 'Running MuFLR ...'
-    ./MuFLR   $MfIn.txt > $MfOut.txt  
+    (time ${EXEC_MF} ./params_MuFLR-HDM.dat ) >& mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
+    echo 'Done!'
     
+    NK=$(grep "NK" info/log.txt | awk '{print $3}') 
+    INPUT=mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
+    OUTPUT_BASE=${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}
+
+    NZ=$(echo $(grep "^[0-9]" ${INPUT} | wc -l) "/${NK}" | bc)
+
+    for ((IZ=0; IZ<${NZ}; IZ++)); do
+        NH=$(echo "(1+${IZ})*${NK}" | bc)
+        ZH=$(echo $OUTPUT_Z | awk -v j=$(echo $IZ+1 | bc) '{print $j}')
+        grep "^[0-9]" ${INPUT} | head -${NH} | tail -${NK} | awk '{print $1, $2}' > ${OUTPUT_BASE}_z${ZH}_Pk.txt
+        grep "^[0-9]" ${INPUT} | head -${NH} | tail -${NK} | awk '{print $1, $3/$2}' > ${OUTPUT_BASE}_z${ZH}_f.txt
+    done
+
     echo 'Setting files for Gadget ...'
-    python3 scripts/pre_start.py -ic $ClassOut -im $MfOut --out_pk $PkOut --out_gr $GFOut 
-    echo 'Files' $PkOut 'and' $GFOut 'are ready!'
+    SEL_RED=$(echo OUTPUT_Z | awk '{print $1}}') 
+    PK_FILE=${OUTPUT_BASE}_z${SEL_RED}_Pk.txt
+    THK_FILE=${OUTPUT_BASE}_z${SEL_RED}_f.txt
+    
+    # Might not need this 
+    #python3 scripts/pre_start.py -ic $ClassOut -im $MfOut --out_pk $PkOut --out_gr $GFOut 
+    
+    echo 'Files' $PK_FILE 'and' $THK_FILE 'are ready!'
+    # Modify the param.txt file 
+    sed -e s/TEMPLATE_POWERSPECTRUM/${PK_FILE}/ param.txt > param.txt
+    sed -e s/TEMPLATE_GROWTHRATE/${THK_FILE}/ param.txt > param.txt
+    echo 'Param.txt file is ready, check to be sure!!'
+    sleep 1
+    echo 'Ready to qsub gadget-run'
     ;;
     
     restart) 
     echo 'Restart Hybrid simulation in folder' $SimFolder
 
-    NuDelta=$SimFolder/neutrino_stream_data/neutrino_delta_stream_$aRes.csv
-    NuTheta=$SimFolder/neutrino_stream_data/neutrino_theta_stream_$aRes.csv
-    PowerSpectrum=$SimFolder/powerspecs/powerspec_00$snap_number.txt
+    #NuDelta=$SimFolder/neutrino_stream_data/neutrino_delta_stream_$aRes.csv
+    #NuTheta=$SimFolder/neutrino_stream_data/neutrino_theta_stream_$aRes.csv
+    #PowerSpectrum=$SimFolder/powerspecs/powerspec_00$snap_number.txt
     
-    python3 scripts/pre_restart.py -sf $SimFolder -pk $PkOut -gr $GFOut -cb $CBOut -id $NuDelta -it $NuTheta -icb $PowerSpectrum -str $Stream -Ns $NumStreams
+    p#ython3 scripts/pre_restart.py -sf $SimFolder -pk $PkOut -gr $GFOut -cb $CBOut -id $NuDelta -it $NuTheta -icb $PowerSpectrum -str $Stream -Ns $NumStreams
     
     #c=299792458
     #tau=$(sed -n '1p' $SimFolder/$MfOut.txt | awk '{print $4}')
@@ -76,18 +134,20 @@ case $OPT in
     ;;
 
     postprocess)
-    mkdir -p postprocess 
-    mkdir -p postprocess/plots postprocess/spectra postprocess/render
-    echo 'Post-processing simulation from folder' $SimFolder
-    case $pindex in
-        0)
-            python3 scripts/post.py -ot $OPT -pt $ptype
-            #python3 scripts/post.py -k post_sim -ot $OPT -sf $SimFolder -pp $pindex -sa $snap_number 
-        ;;
-        1)
-            #python3 scripts/spectrum.py -k post_sim -ot $OPT -sf $SimFolder -pp $pindex -sa $snap_number 
-        ;;
-    esac
+    #mkdir -p postprocess 
+    #mkdir -p postprocess/plots postprocess/spectra postprocess/render
+    #echo 'Post-processing simulation from folder' $SimFolder
+    
+    #python3 scripts/post.py -sf $SimFolder -pt $ptype  -sf $SimFolder -pp $pindex -sa $snap_number 
+    
+    #case $pindex in
+    #    0)
+    #        python3 scripts/post.py -sf $SimFolder -pt $ptype  -sf $SimFolder -pp $pindex -sa $snap_number 
+    #    ;;
+    #    1)
+    #        python3 scripts/post.py -sf $SimFolder -pp $pindex -sa $snap_number 
+    #    ;;
+    #esac
     ;;
 esac
 

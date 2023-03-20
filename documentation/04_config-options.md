@@ -1285,6 +1285,23 @@ blah
 
 -------
 
+-------
+
+**N_TAU**
+
+This option selects the number of momenta (flows) or the 
+multi fluid calculation.
+
+-------
+
+-------
+
+**N_MU**
+
+This option selects the number of legendre multipoles for the 
+multi fluid calculation.
+
+-------
 **GENERATE_GAS_IN_ICS**
 
 This option can be used to modify dark matter-only initial conditions

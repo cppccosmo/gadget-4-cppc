@@ -15,4 +15,27 @@ module add hdf5/1.8.21-threadsafe
 
 cd $PBS_O_WORKDIR
 
-mpirun -np 128 ./Gadget4-start param.txt | tee simlog.txt
+# Chane here ONLY
+TYPE=start
+
+case $TYPE in
+    
+    start)
+    
+    mpirun -np 128 ./Gadget4-start param.txt | tee simlog_start.txt
+    
+    ;;
+    
+    restart-mf)
+    
+    mpirun -np 128 ./Gadget4-mf-restart param.txt | tee simlog_mf_restart.txt
+    
+    ;;
+    
+    restart-hybrid)
+    
+    mpirun -np 128 ./Gadget4-hybrid-restart param_restart.txt | tee simlog_hybrid_restart.txt
+    
+    ;;
+
+esac

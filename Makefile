@@ -62,12 +62,12 @@
 
 
 ifdef DIR
-EXEC = $(DIR)/Gadget4-hybrid-restart
-CONFIG = htools/Config_hybrid_restart.sh
-BUILD_DIR = build
+EXEC = $(DIR)/Gadget4
+CONFIG = htools/Config.sh
+BUILD_DIR = $(DIR)/build
 else
 EXEC   = Gadget4
-CONFIG   = htools/Config.sh
+CONFIG   = Template-Config.sh
 BUILD_DIR = build
 endif
 
@@ -76,12 +76,15 @@ SRC_DIR = src
 ###################
 #determine SYSTYPE#
 ###################
-ifdef SYSTYPE
-SYSTYPE := "$(SYSTYPE)"
--include Makefile.systype
-else
-include std-Makefile.systype
-endif
+
+SYSTYPE="Katana"
+
+#ifdef SYSTYPE
+#SYSTYPE := "$(SYSTYPE)"
+#-include Makefile.systype
+#else
+#include std-Makefile.systype
+#endif
 
 
 
@@ -105,7 +108,7 @@ RESULT     := $(shell SRC_DIR=$(SRC_DIR) BUILD_DIR=$(BUILD_DIR) ./buildsystem/gi
 #define available Systems#
 ##########################
 ifeq ($(SYSTYPE),"Katana")
-include buildsystem/Makefile.path.katana
+#include buildsystem/Makefile.path.katana
 include buildsystem/Makefile.comp.gcc
 endif
 
