@@ -7,7 +7,7 @@
 module purge
 module load gcc gsl
 
-export $OMP_NUM_THREADS=16
+export OMP_NUM_THREADS=16
 
 cd $PBS_O_WORKDIR
 

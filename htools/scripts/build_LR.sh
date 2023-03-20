@@ -13,7 +13,6 @@ mkdir $1/class_data
 mkdir $1/mf_data
 mkdir $1/psd
 
-# Move scripts on the simulation folder
 cp htools/htools $1; chmod u+x $1/htools
 cp htools/scripts/*.py $1/scripts/
 cp htools/scripts/cosmofiles.sh $1/scripts/
@@ -21,10 +20,8 @@ cp htools/scripts/katana_modules.sh $1/scripts/
 cp htools/gadget-pre $1
 cp htools/gadget-run $1
 cp htools/param.txt $1
-cp htools/class_template.ini $1 
 cp htools/class_template_LR.ini $1 
 cp htools/class_template_HR.ini $1 
-cp htools/pk_ref.pre $1 
 cp MF/distribution_functions/* $1/psd
 
 echo 'Compiling MuFLR ...'
@@ -59,9 +56,14 @@ echo 'Writing the log.txt ...'
 sleep 1
 
 NK=$(grep "#define NK " MF/AU_fftgrid.h | awk '{print $3}' | sed 's/(//' | sed 's/)//')
+N_TAU=$(grep "const int N_tau = " MF/AU_cosmofunc.h | sed -e s/"const int N_tau = "//g -e s/";.*$"//g)
+N_MU=$(grep "const int N_mu = " MF/AU_cosmofunc.h | sed -e s/"const int N_mu = "//g -e s/";.*$"//g)
 echo 'Compilation options'     > $1/info/log.txt
 echo ''                       >> $1/info/log.txt
-echo 'NK = ' $NK              >> $1/info/log.txt
+echo 'NK    = ' $NK           >> $1/info/log.txt
+echo 'N_TAU = ' $N_TAU        >> $1/info/log.txt
+echo 'N_MU  = ' $N_MU         >> $1/info/log.txt
+echo ''                       >> $1/info/log.txt
 echo 'Config.sh had'          >> $1/info/log.txt
 echo ''                       >> $1/info/log.txt
 echo $(sed '/^#/d' Config.sh) >> $1/info/log.txt 
