@@ -9,10 +9,21 @@ struct nulinear
 {
 public:
     const double N_nu_eff = 3.044;
-    const double N_nu_massive = 3.044;
-    static const int N_tau = 20; // sets the number of neutrino fluids 
-    static const int N_mu = 20; // sets the highest legendre moment
 
+#ifdef N_TAU
+#define NTAU (N_TAU)
+    static const int N_tau = NTAU;
+#else
+    static const int N_tau = 20; // sets the number of neutrino fluids 
+#endif
+
+#ifdef N_MU
+#define NMU (N_MU)
+    static const int N_mu = NMU;
+#else
+    static const int N_mu = 20; // sets the highest legendre moment
+#endif
+    
 #define N_nu_tot (2*N_tau*N_mu)
 #define N_EQ (2*N_tau*N_mu+2)
 
@@ -60,7 +71,8 @@ public:
     // SuperEasy linear response functions
     double poisson_mod_fac(double k, double a);
 
-    double y_nu[N_EQ*PMGRID];
+    double *y_nu_dynamic;
+
     int initialisation_switch = 1;
     double TimeOld;
 //private:
@@ -71,14 +83,14 @@ public:
     
     const double T_CMB_0_K = 2.726;
    
-#define m_nu_eV (93.259*(All.OmegaNuLin+All.OmegaNuPart)*All.HubbleParam*All.HubbleParam/N_nu_massive)
+#define m_nu_eV (93.259*(All.OmegaNuLin+All.OmegaNuPart)*All.HubbleParam*All.HubbleParam/All.NumHDM)
 #define Omega_nu_t_0 ((All.OmegaNuLin+All.OmegaNuPart)/N_tau)
    
 #define T_CMB_0_K_4 (T_CMB_0_K*T_CMB_0_K*T_CMB_0_K*T_CMB_0_K)
 #define T_NUREL_0_K (0.713765855503608*T_CMB_0_K)
 #define m_T_nu (m_nu_eV * 11604.51812 / T_NUREL_0_K)
 #define Omega_gam_0 ((4.46911743913795e-07)*T_CMB_0_K_4/(All.HubbleParam*All.HubbleParam))
-#define Omega_nurel_0 (0.227107317660239*(N_nu_eff-N_nu_massive)*Omega_gam_0)
+#define Omega_nurel_0 (0.227107317660239*(N_nu_eff-All.NumHDM)*Omega_gam_0)
 #define Omega_rel_0 (Omega_gam_0+Omega_nurel_0)
 #define Omega_de_0 (1.0-All.Omega0-All.OmegaNuPart-All.OmegaNuLin-Omega_rel_0)
     

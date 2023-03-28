@@ -69,6 +69,7 @@ void global_data_all_processes::register_parameters(void)
   add_param("Hubble", &Hubble, PARAM_DOUBLE, PARAM_FIXED);
   add_param("HubbleParam", &HubbleParam, PARAM_DOUBLE, PARAM_FIXED);
   add_param("BoxSize", &BoxSize, PARAM_DOUBLE, PARAM_FIXED);
+  add_param("NumHDM", &NumHDM, PARAM_DOUBLE, PARAM_FIXED);
   add_param("NLR", &NLR, PARAM_INT, PARAM_FIXED);
 
   add_param("MaxMemSize", &MaxMemSize, PARAM_INT, PARAM_CHANGEABLE);

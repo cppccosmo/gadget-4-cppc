@@ -184,8 +184,8 @@ double nulinear::Poisson(double eta, double k, const double *y) {
 // // The two integers t_ex_start and t_ex_finish are the neutrino flow numbers you wish to exclude (i.e. converted to particles). The flows excluded are inclusive of the start and finish numbers. 
 // // Note: the flow numbers are the 'real' number labels that start from tau=1 to tau_max, and not the c-index that is offsetted (i.e. start from tau=0).
 /*
-    int t_ex_start = 3;
-    int t_ex_finish = 4;
+    int t_ex_start = 11;
+    int t_ex_finish = 14;
 
     for(int t=0; t<t_ex_start-1; t++) {
       sum_Od += Nulinear.OF_eta(t,eta) * y[2*t*N_mu];
@@ -228,8 +228,8 @@ double nulinear::d_nu_mono(double z, const double *y) {
 // The two integers t_ex_start and t_ex_finish are the neutrino flow numbers you wish to exclude (i.e. converted to particles). The flows excluded are inclusive of the start and finish numbers. 
 // Note: the flow numbers are the 'real' number labels that start from tau=1 to tau_max, and not the c-index that is offsetted (i.e. start from tau=0).
 /*
-    int t_ex_start = 3;
-    int t_ex_finish = 3;
+    int t_ex_start = 11;
+    int t_ex_finish = 14;
 
     for(int t=0; t<t_ex_start-1; t++) {
       double E_m = 1.0;

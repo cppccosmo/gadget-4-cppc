@@ -63,7 +63,7 @@
 
 ifdef DIR
 EXEC = $(DIR)/Gadget4
-CONFIG = htools/Config.sh
+CONFIG = Config.sh
 BUILD_DIR = $(DIR)/build
 else
 EXEC   = Gadget4

@@ -1,40 +1,36 @@
 #!/bin/bash
 
 #PBS -l select=4:ncpus=32:mem=95gb:mpiprocs=32
-##PBS -l ib=yes
 #PBS -l walltime=24:00:00
-#PBS -N massivenu
+#PBS -N job
 
-module purge
-module add intel/2020.0.088
-module add openmpi/4.0.3
-module add gsl
-module add gcc
-module add fftw
-module add hdf5/1.8.21-threadsafe
+# In case you want to run on infiniband nodes activate this 
+##PBS -l ib=yes
 
 cd $PBS_O_WORKDIR
+source scripts/katana_modules.sh
 
-# Chane here ONLY
+# Change here ONLY
 TYPE=start
+NPROCS=32
 
 case $TYPE in
     
     start)
     
-    mpirun -np 128 ./Gadget4-start param.txt | tee simlog_start.txt
+    mpirun -np $NPROCS ./Gadget4 param.txt | tee simlog_start.txt
     
     ;;
     
     restart-mf)
     
-    mpirun -np 128 ./Gadget4-mf-restart param.txt | tee simlog_mf_restart.txt
+    mpirun -np $NPROCS ./Gadget4-mf-restart param.txt | tee simlog_mf_restart.txt
     
     ;;
     
     restart-hybrid)
     
-    mpirun -np 128 ./Gadget4-hybrid-restart param_restart.txt | tee simlog_hybrid_restart.txt
+    mpirun -np $NPROCS ./Gadget4-hybrid-restart param_restart.txt | tee simlog_hybrid_restart.txt
     
     ;;
 

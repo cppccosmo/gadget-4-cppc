@@ -115,7 +115,7 @@ void ngenic::read_power_table(void)
 
   fclose(fd);
 
-  mpi_printf("found %d rows in input spectrum table\n", NPowerTable);
+  mpi_printf("NGENIC_POWER: found %d rows in input spectrum table\n", NPowerTable);
 
   PowerTable = (pow_table *)Mem.mymalloc("PowerTable", NPowerTable * sizeof(pow_table));
 
@@ -173,7 +173,7 @@ void ngenic::read_CB_power_table(void)
 
   fclose(fdcb);
 
-  mpi_printf("found %d rows in input CB spectrum table\n", NCBPowerTable);
+  mpi_printf("NGENIC_POWER: found %d rows in input CB spectrum table\n", NCBPowerTable);
 
   CBPowerTable = (pow_table *)Mem.mymalloc("CBPowerTable", NCBPowerTable * sizeof(pow_table));
 
@@ -231,7 +231,7 @@ void ngenic::read_f_growth_table(void)
 
   fclose(fd);
 
-  mpi_printf("found %d rows in growth rate table\n", NGrowthTable);
+  mpi_printf("NGENIC_POWER: found %d rows in growth rate table\n", NGrowthTable);
 
   GrowthTable = (growth_table *)Mem.mymalloc("GrowthTable", NGrowthTable * sizeof(growth_table));
   

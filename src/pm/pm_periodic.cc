@@ -2517,334 +2517,378 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
 #endif
 #endif
 
-  /* nu-Gadget modificiations */
+
+  /* Dynamical Multi-fluid Modifications */
+
+
+  // declare the arrays 
+
   double phi_adj_fac[PMGRID];
   double power_nuGadget[PMGRID];
   double k_nuGadget[PMGRID];
-  double binsperunit = (PMGRID-1.) / log(sqrt(3.*PMGRID*PMGRID/4.));
+  double binsperunit = (PMGRID - 1.) / log(sqrt(3.*PMGRID*PMGRID/4.));
+
+  // initialise the arrays with 0s or 1s 
+
   for(int i=0; i<PMGRID; i++) {
-    phi_adj_fac[i] = 1;
-    power_nuGadget[i] = 0;
-    k_nuGadget[i] = 0;
+    phi_adj_fac[i] = 1.;
+    power_nuGadget[i] = 0.;
+    k_nuGadget[i] = 0.;
   }
+
+  // measure the N-body particle power spectrum 
 
   pmforce_measure_powerspec_inline(0, typelist, k_nuGadget, power_nuGadget);
 
-if (All.NLR == 2) {
-  double delta_nu_container[PMGRID];
-  /* Initialise the linear neutrino code, only once at the beginning of the simulations */
-  int N_EQ_pm = Nulinear.N_EQ_parser();
-  int N_nu_tot_pm = Nulinear.N_nu_tot_parser();
-  double y_tmp[N_EQ_pm];
   
-  if(All.Time == All.TimeBegin && Nulinear.initialisation_switch == 1) {
-    mpi_printf("NEUTRINOS: Begin multi-fluid initialisation\n");
+  if(All.NLR == 2) {
+    
+    int N_EQ_pm = Nulinear.N_EQ_parser();
+    int N_nu_tot_pm = Nulinear.N_nu_tot_parser();
 
-#ifndef MFLR_RST
-//#ifndef ADDITIONAL_GRID
-    // work out how much each process has to do
-    int local_n_k = 0;
+    double y_tmp[N_EQ_pm];
+
+    int local_n_k = 0; // the number of k modes on this local process
+
     if(PMGRID % NTask == 0) {
       local_n_k = PMGRID / NTask; // the number of k modes divide evenly across all processors, each get given the same amount.
     } else {
       if(ThisTask != NTask-1) {
-        local_n_k = (PMGRID - (PMGRID % NTask) ) / NTask; // all but the last process gets equal amount of k modes to do.
+        local_n_k = (PMGRID - (PMGRID % NTask) ) / NTask; // all but the last process gets equal amount of k modes to do.       
       }
       if(ThisTask == NTask-1) {
-        
+
         local_n_k = PMGRID % NTask + (PMGRID - (PMGRID % NTask) ) / NTask; // the last process gets the rest.
       }
     }
 
-    MPI_Barrier(Communicator);
-    printf("NEUTRINOS: process %d has %d k modes to do\n", ThisTask, local_n_k);
-    MPI_Barrier(Communicator);
+    int local_y_nu_size = local_n_k * N_EQ_pm;
 
-    // for every momentum value, the neutrino perturbations are initialised and stored first in the temporary array, then its copied into the larger permanent y_nu array
+    int local_start_point;
 
-    if(ThisTask != NTask-1) {
-      for(int bin_index=ThisTask*local_n_k; bin_index<(ThisTask+1)*local_n_k; bin_index++) {
-        if(power_nuGadget[bin_index] != 0) {
-          Nulinear.evolve_to_z(k_nuGadget[bin_index], 1./All.Time - 1., y_tmp); // evolve the linear equations to initial redshift
+    if(ThisTask != NTask - 1) {
+      local_start_point = ThisTask * local_n_k;
+    }
 
-          for(int n_int=0; n_int<N_EQ_pm; n_int++) {
-            Nulinear.y_nu[bin_index*N_EQ_pm + n_int] = y_tmp[n_int] * sqrt(power_nuGadget[bin_index]) / y_tmp[N_nu_tot_pm]; // save the local results to the global array y_nu, the array is also normalised to the simulation delta.
+    if(ThisTask == NTask - 1) {
+      local_start_point = PMGRID - local_n_k;
+    }
+
+    if(All.Time == All.TimeBegin && Nulinear.initialisation_switch == 1) {
+      mpi_printf("NEUTRINOS: Begin multi-fluid initialisation\n");
+
+#ifndef MFLR_RST
+      printf("NEUTRINOS: process %d has %d k modes to do\n", ThisTask, local_n_k);
+      MPI_Barrier(Communicator);
+
+      // for every momentum value, the neutrino perturbations are initialised and stored first in the temporary array, then its copied into the larger permanent y_nu array
+
+      if(ThisTask != NTask-1) {
+        for(int bin_index=ThisTask*local_n_k; bin_index<(ThisTask+1)*local_n_k; bin_index++) {
+ 
+          int index_local = bin_index - ThisTask*local_n_k;
+
+          if(power_nuGadget[bin_index] != 0) {
+            Nulinear.evolve_to_z(k_nuGadget[bin_index], 1./All.Time - 1., y_tmp); // evolve the linear equations to initial redshift
+
+            for(int n_int=0; n_int<N_EQ_pm; n_int++) {
+              Nulinear.y_nu_dynamic[index_local*N_EQ_pm + n_int] = y_tmp[n_int] * sqrt(power_nuGadget[bin_index]) / y_tmp[N_nu_tot_pm]; // save the local results to the global array y_nu, the array is also normalised to the simulation delta.
+            }
           }
         }
       }
-    }
 
-    if(ThisTask == NTask-1) {
-      for(int bin_index=PMGRID-local_n_k; bin_index<PMGRID; bin_index++) {
-        if(power_nuGadget[bin_index] != 0) {
-          Nulinear.evolve_to_z(k_nuGadget[bin_index], 1./All.Time - 1., y_tmp);
-          
-          for(int n_int=0; n_int<N_EQ_pm; n_int++) {
-            Nulinear.y_nu[bin_index*N_EQ_pm + n_int] = y_tmp[n_int] * sqrt(power_nuGadget[bin_index]) / y_tmp[N_nu_tot_pm];
+      if(ThisTask == NTask-1) {
+        for(int bin_index=PMGRID-local_n_k; bin_index<PMGRID; bin_index++) {
+
+          int index_local = bin_index - (PMGRID - local_n_k);
+
+          if(power_nuGadget[bin_index] != 0) {
+            Nulinear.evolve_to_z(k_nuGadget[bin_index], 1./All.Time - 1., y_tmp);
+
+            for(int n_int=0; n_int<N_EQ_pm; n_int++) {
+              Nulinear.y_nu_dynamic[index_local*N_EQ_pm + n_int] = y_tmp[n_int] * sqrt(power_nuGadget[bin_index]) / y_tmp[N_nu_tot_pm];
+            }
           }
         }
       }
-    }
-    MPI_Barrier(Communicator);
-
-    // the global array is not complete. Each process only populated their own local part of y_nu. Now we collect all the patches
-    for(int i=0; i<NTask-1; i++) {
-      int buf_size = ((PMGRID - (PMGRID % NTask) ) / NTask) * N_EQ_pm;
-      double send_buf[buf_size];
-
-      if(ThisTask == i) {
-        for(int j=0; j<buf_size; j++) 
-          send_buf[j] = Nulinear.y_nu[i*buf_size + j];
-      }
-
-      MPI_Bcast(send_buf, buf_size, MPI_DOUBLE, i, Communicator);
-
-      if(ThisTask != i) {
-        for(int j=0; j<buf_size; j++)
-          Nulinear.y_nu[i*buf_size + j] = send_buf[j];
-      }
-    }
-
-    // the last process could be a different size, needs special attention.
-    int last_buf_size = (PMGRID % NTask + (PMGRID - (PMGRID % NTask)) / NTask) * N_EQ_pm;
-    double last_buf[last_buf_size];
-
-    if(ThisTask == NTask-1) {
-      for(int j=0; j<last_buf_size; j++) {
-        last_buf[j] = Nulinear.y_nu[PMGRID*N_EQ_pm - last_buf_size + j];
-      }
-    }
-
-    MPI_Bcast(last_buf, last_buf_size, MPI_DOUBLE, NTask-1, Communicator);
-
-    if(ThisTask != NTask-1) {
-      for(int j=0; j<last_buf_size; j++) {
-        Nulinear.y_nu[PMGRID*N_EQ_pm - last_buf_size + j] = last_buf[j];
-      }
-    }
-
-    MPI_Barrier(Communicator);
 
 #else
-    mpi_printf("This is a restarted run, read the nonlinear info for y_nu instead of using evolve_to_z()\n");
+      // read in the multi-fluid perturbations from the y_nu file instead of reinitialising
+      mpi_printf("This is a restarted run, read the nonlinear info for y_nu instead of using evolve_to_z()\n");
 
-    FILE *fdnu;
-    char bufnu[MAXLEN_PATH];
+      FILE *fdnu;
+      char bufnu[MAXLEN_PATH];
 
-    sprintf(bufnu, All.ynuFile);
+      sprintf(bufnu, All.ynuFile);
 
-    if(!(fdnu = fopen(bufnu, "r")))
-      {
-        Terminate("can't read file\n");
-      }
-
-    int y_nu_size = Nulinear.N_EQ_parser() * PMGRID;
-
-    double y_nu_read[y_nu_size];
-
-    fread(y_nu_read, sizeof(double), y_nu_size, fdnu);
-
-    for(int i=0; i<y_nu_size; i++)
-      {
-        Nulinear.y_nu[i] = y_nu_read[i];
-      }
-
-    fclose(fdnu);
-#endif
-
-    Nulinear.initialisation_switch = 0; // switch to tell the code initialisation is complete, do not call this function again.
-    Nulinear.TimeOld = All.Time;
-    mpi_printf("NEUTRINOS: Neutrino initialisation done\n");
-  }
- 
-  if(Nulinear.initialisation_switch != 1) {
-    if(mode == 0) {
-      mpi_printf("NEUTRINOS: Begin multi-fluid calculation\n");
-    }
-
-    for(int bin_index=0; bin_index<PMGRID; bin_index++) {
-      if(power_nuGadget[bin_index] != 0) {
-        // the information about neutrino perturbations for this k value is retrieved from the larger y_nu array
-        for(int n_int=0; n_int<N_EQ_pm; n_int++) {
-          y_tmp[n_int] = Nulinear.y_nu[bin_index*N_EQ_pm + n_int];
-        }
-        double z1, z2;
-        z1 = 1./Nulinear.TimeOld - 1.; //1./(All.Time - All.TimeStep) - 1.;
-        z2 = 1./All.Time - 1.;
-        
-        if(mode == 0 && All.Time != All.TimeBegin) {
-          // the neutrino evolution is now calculated, with the nonlinear correction to delta_cb accounted for
-          Nulinear.evolve_step(k_nuGadget[bin_index], z1, z2, y_tmp);
+      if(!(fdnu = fopen(bufnu, "r")))
+        {
+          Terminate("can't read file\n");
         }
 
-        // update the CDM delta with the N-body nonlinear delta
-        y_tmp[N_nu_tot_pm] = sqrt(power_nuGadget[bin_index]);
-
-        double delta_nu = Nulinear.d_nu_mono(z2, y_tmp);
-        delta_nu_container[bin_index] = delta_nu;
-        
-        double fnu_pm = All.OmegaNuLin / (All.OmegaNuLin + All.OmegaNuPart + All.Omega0);
-        // the poission equation needs to be modified to have (rho_cb*delta_cb + rho_nu*delta_nu), this factor accounts for that adjustment
-        phi_adj_fac[bin_index] = 1. + fnu_pm / (1.-fnu_pm) * delta_nu / sqrt(power_nuGadget[bin_index]);
-
-        if(mode == 0) {
-          // store the updated perturbations back into the larger y_nu array
-          for(int n_int=0; n_int<N_EQ_pm; n_int++) {
-            Nulinear.y_nu[bin_index*N_EQ_pm + n_int] = y_tmp[n_int];
-          }
-        }
-      }
-    }
-
-    // write output file for neutrion data by the streams 
-    if(mode != 0)
-      {
-        if(ThisTask == 0) 
-          {
-            char buf[MAXLEN_PATH_EXTRA];
-            sprintf(buf, "%s/neutrino_stream_data", All.OutputDir);
-            mkdir(buf, 02755);
-          }
-
-        sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
-
-        if(ThisTask == 0)
-          {
-            FILE *fd;
-
-            if(!(fd = fopen(neutrino_delta_stream_fname, "w")))
-              {
-                Terminate("can't open file '%s'\n", neutrino_delta_stream_fname);
-              }
-
-            for (int bin_index = 0; bin_index < PMGRID; bin_index++) 
-              {
-                if (power_nuGadget[bin_index] != 0.) 
-                  {
-                    double y_tmp[Nulinear.N_EQ_parser()];
-
-                    for (int n_int = 0; n_int < Nulinear.N_EQ_parser(); n_int++) 
-                      {
-                        y_tmp[n_int] = Nulinear.y_nu[bin_index*Nulinear.N_EQ_parser() + n_int];
-                      }
-
-                    fprintf(fd, "%g,", k_nuGadget[bin_index]);
-
-                    for(int T = 0; T < Nulinear.N_tau_parser(); T++)
-                      {
-                        fprintf(fd, "%g,", y_tmp[2*T*Nulinear.N_mu_parser()]);
-                      }
-
-                    fprintf(fd, "\n");
-                  }
-              }
-
-            fclose(fd);
+      int global_y_nu_size = PMGRID * N_EQ_pm;
    
-          }
+      fseek(fdnu, local_start_point * N_EQ_pm * sizeof(double), SEEK_SET);
 
-        sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time);
+      fread(Nulinear.y_nu_dynamic, sizeof(double), local_y_nu_size, fdnu);
 
-        if(ThisTask == 0)
-          {
-            FILE *fd;
+      fclose(fdnu);
 
-            if(!(fd = fopen(neutrino_theta_stream_fname, "w")))
-              {
-                Terminate("can't open file '%s'\n", neutrino_theta_stream_fname);
-              }
+#endif
+      MPI_Barrier(Communicator);
+      Nulinear.initialisation_switch = 0; // switch to tell the code initialisation is complete, do not call this function again.
+      Nulinear.TimeOld = All.Time;
+      mpi_printf("NEUTRINOS: Neutrino initialisation done\n");
+    }
 
-            for (int bin_index = 0; bin_index < PMGRID; bin_index++) 
-              {
-                if (power_nuGadget[bin_index] != 0.) 
-                  {
-
-                    double y_tmp[Nulinear.N_EQ_parser()];
-
-                    for (int n_int = 0; n_int < Nulinear.N_EQ_parser(); n_int++) 
-                      {
-                        y_tmp[n_int] = Nulinear.y_nu[bin_index*Nulinear.N_EQ_parser() + n_int];
-                      }
-
-                    fprintf(fd, "%g,", k_nuGadget[bin_index]);
-
-                    for(int T = 0; T < Nulinear.N_tau_parser(); T++)
-                      {
-                        fprintf(fd, "%g,", y_tmp[2*T*Nulinear.N_mu_parser() + 1]);
-                      }
-
-                    fprintf(fd, "\n");
-                  }
-              }
-
-            fclose(fd);            
-
-          }
+    // here is the routine for evolving the multi-fluid system 
+    if(Nulinear.initialisation_switch != 1) {
+      if(mode == 0) {
+        mpi_printf("NEUTRINOS: Begin multi-fluid calculation\n");
       }
+
+      for(int local_index=0; local_index<local_n_k; local_index++) {
+        int bin_index;
+
+        if(ThisTask != NTask - 1) {
+          bin_index = local_index + ThisTask*local_n_k;
+        }
+        if(ThisTask == NTask - 1) {
+          bin_index = local_index + (PMGRID - local_n_k);
+        }
+
+        if(power_nuGadget[bin_index] != 0) {
+          // the information about neutrino perturbations for this k value is retrieved from the larger y_nu array
+          for(int n_int=0; n_int<N_EQ_pm; n_int++) {
+            y_tmp[n_int] = Nulinear.y_nu_dynamic[local_index*N_EQ_pm + n_int];
+          }
+
+          double z1, z2;
+          z1 = 1./Nulinear.TimeOld - 1.; 
+          z2 = 1./All.Time - 1.;
+
+          if(mode == 0 && All.Time != All.TimeBegin) {
+            // the neutrino evolution is now calculated, with the nonlinear correction to delta_cb accounted for
+            Nulinear.evolve_step(k_nuGadget[bin_index], z1, z2, y_tmp);
+          }
+
+          // update the CDM delta in the array with the current N-body result
+          y_tmp[N_nu_tot_pm] = sqrt(power_nuGadget[bin_index]);
+
+          double delta_nu = Nulinear.d_nu_mono(z2, y_tmp);
+          double fnu_pm = All.OmegaNuLin / (All.OmegaNuLin + All.OmegaNuPart + All.Omega0);
+          // the poission equation needs to be modified to have (rho_cb*delta_cb + rho_nu*delta_nu), this factor accounts for that adjustment
+          phi_adj_fac[bin_index] = 1. + fnu_pm / (1.-fnu_pm) * delta_nu / sqrt(power_nuGadget[bin_index]);
+        
+          if(mode == 0) {
+            // store the updated perturbations back into the larger y_nu array
+            for(int n_int=0; n_int<N_EQ_pm; n_int++) {
+              Nulinear.y_nu_dynamic[local_index*N_EQ_pm + n_int] = y_tmp[n_int];
+            }
+          }
+        }
+      }
+
+      // all the multi-fluid evolution is done, collect all the phi_adj_fac from each process
+      MPI_Barrier(Communicator);
+      MPI_Allreduce(MPI_IN_PLACE, &phi_adj_fac, PMGRID, MPI_DOUBLE, MPI_PROD, Communicator);
+
+    }
 
     if(mode == 0) {
       Nulinear.TimeOld = All.Time;
       mpi_printf("NEUTRINOS: Multi-fluid calculation done\n");
     }
 
-    // output y_nu data for restarted run
+    // write the neutrino density and velocity perturbations out into .csv file
+    if(mode != 0) {
+      if(ThisTask == 0) {
+        printf("Writing multi-fluid data to file\n");
+        printf("Task %d writing to file\n", ThisTask);
+
+        char buf[MAXLEN_PATH_EXTRA];
+        sprintf(buf, "%s/neutrino_stream_data", All.OutputDir);
+        mkdir(buf, 02755);
+
+        sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
+        sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time);
+
+        FILE *fd_delta, *fd_theta; 
+
+        if(!(fd_delta = fopen(neutrino_delta_stream_fname, "w"))) {
+          Terminate("can't open file '%s'\n", neutrino_delta_stream_fname);
+        }
+
+        if(!(fd_theta = fopen(neutrino_theta_stream_fname, "w"))) {
+          Terminate("can't open file '%s'\n", neutrino_theta_stream_fname);
+        }
+
+        for(int local_index=0; local_index<local_n_k; local_index++) {
+          int global_index = local_index + ThisTask*local_n_k;
+
+          if(power_nuGadget[global_index] != 0) {
+            for(int n_int=0; n_int<N_EQ_pm; n_int++) {
+              y_tmp[n_int] = Nulinear.y_nu_dynamic[local_index*N_EQ_pm + n_int];
+            }
+
+            fprintf(fd_delta, "%g,", k_nuGadget[global_index]);
+            fprintf(fd_theta, "%g,", k_nuGadget[global_index]);
+
+            for(int alpha=0; alpha<Nulinear.N_tau_parser(); alpha++) {
+              fprintf(fd_delta, "%g,", y_tmp[2*alpha*Nulinear.N_mu_parser()]);
+              fprintf(fd_theta, "%g,", y_tmp[2*alpha*Nulinear.N_mu_parser()+1]); 
+            }
+
+            fprintf(fd_delta, "\n");
+            fprintf(fd_theta, "\n");
+          }
+        }
+
+        fclose(fd_delta);
+        fclose(fd_theta);
+      }
+
+      MPI_Barrier(Communicator);
+
+      for(int nt=1; nt<NTask-1; nt++) {
+        if(ThisTask == nt) {
+          printf("Task %d writing to file\n", ThisTask);
+
+          sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
+          sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time);
+ 
+          FILE *fd_delta, *fd_theta;
+        
+          if(!(fd_delta = fopen(neutrino_delta_stream_fname, "a"))) {
+            Terminate("can't open file '%s'\n", neutrino_delta_stream_fname);
+          }
+
+          if(!(fd_theta = fopen(neutrino_theta_stream_fname, "a"))) {
+            Terminate("can't open file '%s'\n", neutrino_theta_stream_fname);
+          }
+
+          for(int local_index=0; local_index<local_n_k; local_index++) {
+            int global_index = local_index + ThisTask*local_n_k;
+       
+            if(power_nuGadget[global_index] != 0) {   
+              for(int n_int=0; n_int<N_EQ_pm; n_int++) {
+                y_tmp[n_int] = Nulinear.y_nu_dynamic[local_index*N_EQ_pm + n_int];
+              }
+          
+              fprintf(fd_delta, "%g,", k_nuGadget[global_index]);
+              fprintf(fd_theta, "%g,", k_nuGadget[global_index]);
+          
+              for(int alpha=0; alpha<Nulinear.N_tau_parser(); alpha++) {
+                fprintf(fd_delta, "%g,", y_tmp[2*alpha*Nulinear.N_mu_parser()]);
+                fprintf(fd_theta, "%g,", y_tmp[2*alpha*Nulinear.N_mu_parser()+1]);
+              }
+          
+              fprintf(fd_delta, "\n");
+              fprintf(fd_theta, "\n");
+            }
+          }
+
+          fclose(fd_delta);
+          fclose(fd_theta);
+        }
+        
+        MPI_Barrier(Communicator);
+      }
+
+      if(ThisTask == NTask-1) {
+        printf("Task %d writing to file\n", ThisTask);
+
+        sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
+        sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time); 
+ 
+        FILE *fd_delta, *fd_theta;
+          
+        if(!(fd_delta = fopen(neutrino_delta_stream_fname, "a"))) {
+          Terminate("can't open file '%s'\n", neutrino_delta_stream_fname);
+        }
+
+        if(!(fd_theta = fopen(neutrino_theta_stream_fname, "a"))) {
+          Terminate("can't open file '%s'\n", neutrino_theta_stream_fname);
+        }
+
+        for(int local_index=0; local_index<local_n_k; local_index++) {
+          int global_index = local_index + (PMGRID - local_n_k);
+
+          if(power_nuGadget[global_index] != 0) {
+            for(int n_int=0; n_int<N_EQ_pm; n_int++) {
+              y_tmp[n_int] = Nulinear.y_nu_dynamic[local_index*N_EQ_pm + n_int];
+            }
+
+            fprintf(fd_delta, "%g,", k_nuGadget[global_index]);
+            fprintf(fd_theta, "%g,", k_nuGadget[global_index]);
+
+            for(int alpha=0; alpha<Nulinear.N_tau_parser(); alpha++) {
+              fprintf(fd_delta, "%g,", y_tmp[2*alpha*Nulinear.N_mu_parser()]);
+              fprintf(fd_theta, "%g,", y_tmp[2*alpha*Nulinear.N_mu_parser()+1]);
+            }
+
+            fprintf(fd_delta, "\n");
+            fprintf(fd_theta, "\n");
+          }
+        }
+
+        fclose(fd_delta);
+        fclose(fd_theta);
+      }
+
+      MPI_Barrier(Communicator);
+    }
+
+    // write the y_nu data into .dat file for multi-fluid restart or hybrid restart runs
     if(mode != 0) {
       if(ThisTask == 0) {
         char buf[MAXLEN_PATH_EXTRA];
         sprintf(buf, "%s/y_nu", All.OutputDir);
         mkdir(buf, 02755);
-      }
 
-      sprintf(y_nu_fname, "%s/y_nu/y_nu_%.3f.dat", All.OutputDir, All.Time);
+        sprintf(y_nu_fname, "%s/y_nu/y_nu_%.3f.dat", All.OutputDir, All.Time);
 
-      if(ThisTask == 0) {
-        FILE *fdnu;
-        
-        if(!(fdnu = fopen(y_nu_fname, "w"))) {
+        FILE *fd_ynu;
+
+        if(!(fd_ynu = fopen(y_nu_fname, "w"))) {
           Terminate("can't open file '%s'\n", y_nu_fname);
         }
 
-        int y_nu_size = Nulinear.N_EQ_parser() * PMGRID;
+        int size_to_write = Nulinear.N_EQ_parser() * local_n_k;
 
-        fwrite(Nulinear.y_nu, sizeof(double), y_nu_size, fdnu);
+        printf("Task %d writing to file\n", ThisTask);
 
-        fclose(fdnu);
-      }  
+        fwrite(Nulinear.y_nu_dynamic, sizeof(double), size_to_write, fd_ynu);
 
-    }
-
-    // write output file for neutrino total monopole delta, when power spectrum output is requested.
-    if(mode != 0) {
-      if(ThisTask == 0){
-        char buf[MAXLEN_PATH_EXTRA];
-        sprintf(buf, "%s/neutrino_delta", All.OutputDir);
-        mkdir(buf, 02755);
+        fclose(fd_ynu);
       }
 
-      sprintf(neutrino_delta_fname, "%s/neutrino_delta/neutrino_delta_%.3f.txt", All.OutputDir, All.Time);
+      MPI_Barrier(Communicator);
 
-      if(ThisTask == 0){
-        FILE *fd;
+      for(int nt=1; nt<NTask; nt++) {
+        if(ThisTask == nt) {
+          sprintf(y_nu_fname, "%s/y_nu/y_nu_%.3f.dat", All.OutputDir, All.Time);
 
-        if(!(fd = fopen(neutrino_delta_fname, "w"))) {
-          Terminate("can't open file '%s'\n", neutrino_delta_fname);
-        }
+          FILE *fd_ynu;
 
-        fprintf(fd, "%g\n", All.Time);
-        fprintf(fd, "%g\n", All.BoxSize);
-        fprintf(fd, "%d\n", (int)(PMGRID));
-
-        for(int i=0; i<PMGRID; i++) {
-          if(power_nuGadget[i] != 0) {
-            fprintf(fd, "%g %g\n", k_nuGadget[i], delta_nu_container[i]);
+          if(!(fd_ynu = fopen(y_nu_fname, "a"))) {
+            Terminate("can't open file '%s'\n", y_nu_fname);
           }
+
+          int size_to_write = Nulinear.N_EQ_parser() * local_n_k;
+
+          printf("Task %d writing to file\n", ThisTask);
+
+          fwrite(Nulinear.y_nu_dynamic, sizeof(double), size_to_write, fd_ynu);
+
+          fclose(fd_ynu);
         }
 
-        fclose(fd);
+        MPI_Barrier(Communicator);
       }
     }
   }
-}
 
   if(mode != 0)
     {
@@ -2903,10 +2947,24 @@ if (All.NLR == 2) {
           if(k2 > 0)
             {
               int bin_index_pm;
-              if(All.NLR == 2) {
-                bin_index_pm = floor(binsperunit*log(sqrt(k2)*All.BoxSize/(2.*M_PI)));
-                assert(bin_index_pm < PMGRID);
+
+              bin_index_pm = floor(binsperunit*log(sqrt(k2)*All.BoxSize/(2.*M_PI)));
+              assert(bin_index_pm < PMGRID);
+
+              double dk, u_k;
+
+              if(bin_index_pm != PMGRID-1) {
+                dk = k_nuGadget[bin_index_pm+1] - k_nuGadget[bin_index_pm];
+              } else {
+                dk = 0;
               }
+
+              if(dk != 0) {
+                u_k = (sqrt(k2) - k_nuGadget[bin_index_pm])/dk;
+              } else {
+                u_k = 0;
+              }
+
 
               smth = -exp(-k2 * asmth2) / k2;
 
@@ -2934,7 +2992,16 @@ if (All.NLR == 2) {
               deconv    = ff * ff * ff * ff;
 
               if(All.NLR == 2) { // multi-fluid neutrino linear response
-                smth *= phi_adj_fac[bin_index_pm];
+
+                double phi_adj_interp;
+
+                if(bin_index_pm != PMGRID-1) {
+                  phi_adj_interp = ( (1. - u_k) * phi_adj_fac[bin_index_pm] + u_k * phi_adj_fac[bin_index_pm+1] );
+                } else {
+                  phi_adj_interp = phi_adj_fac[bin_index_pm];
+                }
+
+                smth *= phi_adj_interp;
               }
               
               if(All.NLR == 1) { // SuperEasy neutrino linear response

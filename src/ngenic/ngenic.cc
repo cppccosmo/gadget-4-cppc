@@ -80,7 +80,7 @@ void ngenic::ngenic_displace_particles(void)
   double vel_prefac1 = All.cf_atime * All.cf_hubble_a * ngenic_f1_omega(All.cf_atime);
   double vel_prefac2 = All.cf_atime * All.cf_hubble_a * ngenic_f2_omega(All.cf_atime);
 
-  mpi_printf("f_of_k = %g\n", ngenic_f1_omega(All.cf_atime));
+  mpi_printf("NGENIC: f_of_k = %g\n", ngenic_f1_omega(All.cf_atime));
 
   if(All.NLR > 0) {
     mpi_printf("NGENIC: scale-dependent growth used.\n");
@@ -433,7 +433,7 @@ void ngenic::ngenic_displace_particles(void)
   MPI_Reduce(&maxvel, &maxvel_global, 1, MPI_DOUBLE, MPI_MAX, 0, Communicator);
 
   double max_3D_vel = sqrt(Sp->P[max_vel_part].Vel[0] * Sp->P[max_vel_part].Vel[0] + Sp->P[max_vel_part].Vel[1] * Sp->P[max_vel_part].Vel[1] + Sp->P[max_vel_part].Vel[2] * Sp->P[max_vel_part].Vel[2]);
-  printf("on Task = %d, max_3D_vel = %g, maxvel = %g\n", ThisTask, max_3D_vel, maxvel);
+  mpi_printf("NGENIC: on Task = %d, max_3D_vel = %g, maxvel = %g\n", ThisTask, max_3D_vel, maxvel);
 
   mpi_printf("\nNGENIC: Maximum displacement: %g, in units of the part-spacing= %g\n\n", max_disp_global,
              max_disp_global / (All.BoxSize / NGENIC));

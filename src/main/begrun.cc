@@ -172,7 +172,38 @@ void sim::begrun1(const char *parameterFile)
   /* This is initialised here because it will never be freed, so its best to have it in the deepest part of the stack */
 //#ifdef ADDITIONAL_GRID
   Nulinear.tau_t_eV(0);
+
+  if (All.NLR == 0 && All.NumHDM > 0.){
+      Terminate("You selected a LCDM run (NLR=0), however NumHDM is set to %.3f. You need to set it to zero in the param file!\n",All.NumHDM);
+  }
+
 //#endif
+
+  if(All.NLR == 2) {
+    int local_y_nu_size = 0, local_n_k = 0;
+
+    if(PMGRID % NTask == 0) {
+      local_n_k = PMGRID / NTask; 
+    } else {
+      if(ThisTask != NTask-1) {
+        local_n_k = (PMGRID - (PMGRID % NTask) ) / NTask;
+      }
+      if(ThisTask == NTask-1) {
+        local_n_k = PMGRID % NTask + (PMGRID - (PMGRID % NTask) ) / NTask;
+      }
+    }
+
+    local_y_nu_size = local_n_k * (2 * Nulinear.N_tau * Nulinear.N_mu + 2);
+
+    //printf("Task = %d,  PMGRID = %d, local_n_k = %d, local_y_nu_size = %d\n", ThisTask, PMGRID, local_n_k, local_y_nu_size);
+
+    Nulinear.y_nu_dynamic = (double *)Mem.mymalloc_movable_clear(&Nulinear.y_nu_dynamic, "y_nu_dynamic", local_y_nu_size * sizeof(Nulinear.y_nu_dynamic));
+
+    for(int i=0; i<local_y_nu_size; i++) {
+      Nulinear.y_nu_dynamic[i] = 0;
+    }
+
+  }
 
   if(All.OutputListOn)
     All.read_outputlist(All.OutputListFilename);
