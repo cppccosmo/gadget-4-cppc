@@ -394,6 +394,10 @@ possible, and intermediate forms in principle as well.
 
 -------
 
+**NumHDM**
+
+-------
+
 **N_tau_part**
 
 -------
