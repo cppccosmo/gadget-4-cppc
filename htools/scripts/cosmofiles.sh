@@ -63,6 +63,4 @@ echo ${COSMO_THDMK} >> params_MuFLR-HDM.dat
 echo ${COSMO_GHDM} >> params_MuFLR-HDM.dat
 echo ${COSMO_FHDM} >> params_MuFLR-HDM.dat
 
-#N_TAU=$(grep "const int N_tau = " AU_cosmofunc.h | sed -e s/"const int N_tau = "//g -e s/";.*$"//g)
-#N_MU=$(grep "const int N_mu = " AU_cosmofunc.h | sed -e s/"const int N_mu = "//g -e s/";.*$"//g)
 

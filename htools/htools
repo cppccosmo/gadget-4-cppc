@@ -6,6 +6,11 @@ OPT=$1                           # 'start'           (LR/GLR/MF/HYB)
                                  # 'restart'         (MF/HYB)
                                  # 'postprocess'     (LR/GLR/MF/HYB)
 
+TYPE=1                           # 1: SELR
+                                 # 2: MFLR 
+                                 # 3: GLR 
+                                 # 4: HYB
+
 SIMFOLDER='output'               # Output of simulation to consider 
 
 # Cosmology --------------------------------------------------------------------------------
@@ -33,6 +38,12 @@ CLASS_RES=0                      # Class precision 0: Low, 1: High
 OUTPUT_Z="99 19 9 5 0"
 OUTPUT_NL=0
 OUTPUT_PRINT=2
+
+# Gadget-4 ---------------------------------------------------------------------------------
+
+BOXSIZE=512.0                    # BoxSize for gadget in Mpc/h
+OUTPUT_G="49 19 9 5 3 2 1 0"     # Gadget snapshot output redshfits 
+LIN_HDM=1                        # NLR for linear neutrinos/hdm
 
 
 ############################################################################################
@@ -73,21 +84,27 @@ case $OPT in
     EXEC_CLASS=./class
     EXEC_MF=./MuFLR
     
-    CLASS_ROOT=$(grep 'root' class_template.ini | sed -n 1p | awk '{print $3}' | awk -F"/" '{print $1}')
+    CLASS_ROOT=$(grep 'root' class_template_LR.ini | sed -n 2p | awk '{print $3}' | awk -F"/" '{print $1}')
     mkdir -p $CLASS_ROOT
     
+    echo ''
     echo 'Starting simulation with model' $COSMO_MODEL 
     source scripts/cosmofiles.sh  $CLASS_RES # Create mf file, modify .ini and param.txt files to match cosmology 
-    
+    echo ''
+
     echo 'Running class ...'
     (time ${EXEC_CLASS} input_class_${COSMO_MODEL}.ini) >& info/output_class_${COSMO_MODEL}.txt
     echo 'Done!'
-
+    
+    NK=$(grep "NK" info/log.txt | awk '{print $3}') 
+    N_MU=$(grep "N_MU" info/log.txt | awk '{print $3}') 
+    N_TAU=$(grep "N_TAU" info/log.txt | awk '{print $3}') 
+    
+    echo ''
     echo 'Running MuFLR ...'
     (time ${EXEC_MF} ./params_MuFLR-HDM.dat ) >& mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
     echo 'Done!'
     
-    NK=$(grep "NK" info/log.txt | awk '{print $3}') 
     INPUT=mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
     OUTPUT_BASE=${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}
 
@@ -98,20 +115,37 @@ case $OPT in
         ZH=$(echo $OUTPUT_Z | awk -v j=$(echo $IZ+1 | bc) '{print $j}')
         grep "^[0-9]" ${INPUT} | head -${NH} | tail -${NK} | awk '{print $1, $2}' > ${OUTPUT_BASE}_z${ZH}_Pk.txt
         grep "^[0-9]" ${INPUT} | head -${NH} | tail -${NK} | awk '{print $1, $3/$2}' > ${OUTPUT_BASE}_z${ZH}_f.txt
+        if [[ $IZ -gt 0 ]]; then
+            mv ${OUTPUT_BASE}_z${ZH}_Pk.txt ${OUTPUT_BASE}_z${ZH}_f.txt mf_data
+        fi
     done
-
+    echo ''
     echo 'Setting files for Gadget ...'
-    SEL_RED=$(echo OUTPUT_Z | awk '{print $1}}') 
+    
+    touch outputs.txt
+    NR=$(echo $OUTPUT_G | awk '{print NF}')
+    for ((IZ=0; IZ<${NR}; IZ++)); do
+        AO=$(echo $OUTPUT_G | awk -v j=$(echo $IZ+1 | bc) '{print $j}' | awk '{print 1/(1+$1)}')
+        echo $ZH >> outputs.txt
+    done
+    
+    SEL_RED=$(echo OUTPUT_Z | awk '{print $1}') 
     PK_FILE=${OUTPUT_BASE}_z${SEL_RED}_Pk.txt
     THK_FILE=${OUTPUT_BASE}_z${SEL_RED}_f.txt
+    COSMO_OL=$(echo 1 - $COSMO_OM | bc)    
+
+    sed -e s/TEMPLATE_P_ZIN/${}/ \
+        -e s/TEMPLATE_P_OM/${COSMO_OM}/ \
+        -e s/TEMPLATE_P_OL/${COSMO_OL}/ \
+        -e s/TEMPLATE_P_OB/${COSMO_OB}/ \
+        -e s/TEMPLATE_P_OH/${COSMO_OH}/ \
+        -e s/TEMPLATE_P_H0/${COSMO_H0}/ \
+        -e s/TEMPLATE_P_BOXSIZE/${BOXSIZE}/ \
+        -e s/TEMPLATE_P_NUMHDM/${COSMO_GHDM}/ \
+        -e s/TEMPLATE_P_NLR/${LIN_HDM}/ \
+        -e s/TEMPLATE_POWERSPECTRUM/${PK_FILE}/ \
+        -e s/TEMPLATE_GROWTHRATE/${THK_FILE}/ param_template.txt > param.txt
     
-    # Might not need this 
-    #python3 scripts/pre_start.py -ic $ClassOut -im $MfOut --out_pk $PkOut --out_gr $GFOut 
-    
-    echo 'Files' $PK_FILE 'and' $THK_FILE 'are ready!'
-    # Modify the param.txt file 
-    sed -e s/TEMPLATE_POWERSPECTRUM/${PK_FILE}/ param.txt > param.txt
-    sed -e s/TEMPLATE_GROWTHRATE/${THK_FILE}/ param.txt > param.txt
     echo 'Param.txt file is ready, check to be sure!!'
     sleep 1
     echo 'Ready to qsub gadget-run'
@@ -124,7 +158,7 @@ case $OPT in
     #NuTheta=$SimFolder/neutrino_stream_data/neutrino_theta_stream_$aRes.csv
     #PowerSpectrum=$SimFolder/powerspecs/powerspec_00$snap_number.txt
     
-    p#ython3 scripts/pre_restart.py -sf $SimFolder -pk $PkOut -gr $GFOut -cb $CBOut -id $NuDelta -it $NuTheta -icb $PowerSpectrum -str $Stream -Ns $NumStreams
+    #python3 scripts/pre_restart.py -sf $SimFolder -pk $PkOut -gr $GFOut -cb $CBOut -id $NuDelta -it $NuTheta -icb $PowerSpectrum -str $Stream -Ns $NumStreams
     
     #c=299792458
     #tau=$(sed -n '1p' $SimFolder/$MfOut.txt | awk '{print $4}')
