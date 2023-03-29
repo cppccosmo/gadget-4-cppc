@@ -2991,6 +2991,13 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
               double ff = 1 / (fx * fy * fz);
               deconv    = ff * ff * ff * ff;
 
+              if(All.NLR == 3) { // Generalised SuperEasy linear response
+              
+                 double ser_mod_fac = Nulinear.poisson_gen_mod_fac(sqrt(k2), All.Time);
+                 smth *= ser_mod_fac;
+              }
+
+
               if(All.NLR == 2) { // multi-fluid neutrino linear response
 
                 double phi_adj_interp;

@@ -439,6 +439,13 @@ int nulinear::evolve_step(double k, double z0, double z1, double *w) {
     return 0;
 }
 
+/* Super-easy and Generalised Super-Easy functions */
+
+double nulinear::fs_p(double k, int alpha){
+ 	return sqrt(1.5 * All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * \
+              Nulinear.m_nu_eV_parser() / Nulinear.tau_t_eV(alpha);
+}
+
 double nulinear::poisson_mod_fac(double k, double a) {
     double fnu = All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
     double kfs = 1.5 * sqrt(All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * Nulinear.m_nu_eV_parser();
@@ -446,10 +453,38 @@ double nulinear::poisson_mod_fac(double k, double a) {
     return ((k + kfs) * (k + kfs)) / ((k + kfs) * (k + kfs) - kfs * kfs * fnu); 
 }
 
+double nulinear::poisson_gen_mod_fac(double k, double a) {
+
+     double fnu = All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
+     double mod_fac = 0.;
+
+     for(int i=0; i<Nulinear.N_tau_parser(); i++){
+
+         mod_fac += (Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i)) / \
+	(k * k + k * Nulinear.fs_p(k,i) + Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i));
+
+    // With additional time dependence
+    //     mod_fac += (Nulinear::fs_p(k,i) * Nulinear::fs_p(k,i)) / \
+    //	(k * k + pow(All.Time,1./6.) * k * Nulinear::fs_p(k,i) + Nulinear::fs_p(k,i) * Nulinear::fs_p(k,i));
+
+     }
+
+     mod_fac += -1.;
+
+     return 1. + mod_fac * fnu / Nulinear.N_tau_parser();
+
+     return mod_fac;
+     //return ((k + kfs) * (k + kfs)) / ((k + kfs) * (k + kfs) - kfs * kfs * fnu);
+}
+
+
 double nulinear::compute_deviation(double k, double z, double *w) {
     double fnu = All.OmegaNuLin / (All.Omega0 + All.OmegaNuPart + All.OmegaNuLin);
     return 1. + fnu / (1.-fnu) * Nulinear.d_nu_mono(z,w)/w[N_nu_tot];
 }
+
+
+/* Parser utility functions */
 
 double nulinear::m_nu_eV_parser(void) {
     return m_nu_eV;

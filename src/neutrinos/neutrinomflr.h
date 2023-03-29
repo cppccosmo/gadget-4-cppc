@@ -69,7 +69,9 @@ public:
     double compute_deviation(double k, double z, double *w);
 
     // SuperEasy linear response functions
+    double fs_p(double k, int alpha);
     double poisson_mod_fac(double k, double a);
+    double poisson_gen_mod_fac(double k, double a);
 
     double *y_nu_dynamic;
 
@@ -84,6 +86,7 @@ public:
     const double T_CMB_0_K = 2.726;
    
 #define m_nu_eV (93.259*(All.OmegaNuLin+All.OmegaNuPart)*All.HubbleParam*All.HubbleParam/All.NumHDM)
+// #define m_hdm_eV = All.
 #define Omega_nu_t_0 ((All.OmegaNuLin+All.OmegaNuPart)/N_tau)
    
 #define T_CMB_0_K_4 (T_CMB_0_K*T_CMB_0_K*T_CMB_0_K*T_CMB_0_K)

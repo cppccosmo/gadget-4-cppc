@@ -126,14 +126,14 @@ case $OPT in
     touch outputs.txt
     NR=$(echo $OUTPUT_G | awk '{print NF}')
     for ((IZ=0; IZ<${NR}; IZ++)); do
-        AO=$(echo $OUTPUT_G | awk -v j=$(echo $IZ+1 | bc) '{print $j}' | awk '{print 1/(1+$1)}')
-        echo $ZH >> outputs.txt
+        AO=$(echo $OUTPUT_G | awk -v j=$(echo $IZ+1 | bc) '{print $j}' | awk '{printf("%.5f\n",1/(1+$1))}')
+        echo $AO >> outputs.txt
     done
     
-    SEL_RED=$(echo OUTPUT_Z | awk '{print $1}') 
+    SEL_RED=$(echo $OUTPUT_Z | awk '{print $1}') 
     PK_FILE=${OUTPUT_BASE}_z${SEL_RED}_Pk.txt
     THK_FILE=${OUTPUT_BASE}_z${SEL_RED}_f.txt
-    COSMO_OL=$(echo 1 - $COSMO_OM | bc)    
+    COSMO_OL=$(echo 1 - $COSMO_OM | bc | awk '{printf("%.4f",$0)}')    
     AIN=$(echo $ZIN | awk '{print 1/(1+$1)}')
 
     sed -e s/TEMPLATE_P_ZIN/${AIN}/ \
