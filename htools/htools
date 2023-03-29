@@ -41,6 +41,7 @@ OUTPUT_PRINT=2
 
 # Gadget-4 ---------------------------------------------------------------------------------
 
+ZIN=99.0
 BOXSIZE=512.0                    # BoxSize for gadget in Mpc/h
 OUTPUT_G="49 19 9 5 3 2 1 0"     # Gadget snapshot output redshfits 
 LIN_HDM=1                        # NLR for linear neutrinos/hdm
@@ -133,8 +134,9 @@ case $OPT in
     PK_FILE=${OUTPUT_BASE}_z${SEL_RED}_Pk.txt
     THK_FILE=${OUTPUT_BASE}_z${SEL_RED}_f.txt
     COSMO_OL=$(echo 1 - $COSMO_OM | bc)    
+    AIN=$(echo $ZIN | awk '{print 1/(1+$1)}')
 
-    sed -e s/TEMPLATE_P_ZIN/${}/ \
+    sed -e s/TEMPLATE_P_ZIN/${AIN}/ \
         -e s/TEMPLATE_P_OM/${COSMO_OM}/ \
         -e s/TEMPLATE_P_OL/${COSMO_OL}/ \
         -e s/TEMPLATE_P_OB/${COSMO_OB}/ \
