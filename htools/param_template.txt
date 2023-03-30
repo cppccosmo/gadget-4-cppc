@@ -87,15 +87,15 @@ InitGasTemp                  0
 
 
 %----- N-GenIC
-NSample                                           1024
-GridSize                                          512
+NSample                                           TEMPLATE_P_NUMPARTS
+GridSize                                          TEMPLATE_P_NUMPARTS
 Seed                                              2827492
 SphereMode                                        1
 PowerSpectrumType                                 2
 ReNormalizeInputSpectrum                          0
 PrimordialIndex                                   1.0   
 ShapeGamma                                        0.21
-Sigma8                                            0.8
+Sigma8                                            TEMPLATE_P_SIG8
 PowerSpectrumFile                                 TEMPLATE_POWERSPECTRUM
 GrowthRateFile                                    TEMPLATE_GROWTHRATE
 InputSpectrum_UnitLength_in_cm                    3.085678e24
