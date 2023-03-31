@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#PBS -l select=4:ncpus=32:mem=95gb:mpiprocs=32
+#PBS -l select=1:ncpus=32:mem=95gb:mpiprocs=32
 #PBS -l walltime=24:00:00
 #PBS -N job
 
@@ -10,28 +10,12 @@
 cd $PBS_O_WORKDIR
 source scripts/katana_modules.sh
 
-# Change here ONLY
-TYPE=start
-NPROCS=32
+# Main
+mpirun -np $NCPUS ./Gadget4 param.txt | tee simlog_start.txt
 
-case $TYPE in
-    
-    start)
-    
-    mpirun -np $NPROCS ./Gadget4 param.txt | tee simlog_start.txt
-    
-    ;;
-    
-    restart-mf)
-    
-    mpirun -np $NPROCS ./Gadget4-mf-restart param.txt | tee simlog_mf_restart.txt
-    
-    ;;
-    
-    restart-hybrid)
-    
-    mpirun -np $NPROCS ./Gadget4-hybrid-restart param_restart.txt | tee simlog_hybrid_restart.txt
-    
-    ;;
+# For Multifluid restart only
+#mpirun -np $NCPUS ./Gadget4-mf-restart param.txt | tee simlog_mf_restart.txt
 
-esac
+# For hybrid restart only 
+#mpirun -np $NCPUS ./Gadget4-hybrid-restart param_restart.txt | tee simlog_hybrid_restart.txt
+    
