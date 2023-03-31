@@ -16,7 +16,7 @@ mkdir $1/psd
 cp htools/htools $1; chmod u+x $1/htools
 cp htools/scripts/*.py $1/scripts/
 cp htools/scripts/cosmofiles.sh $1/scripts/
-cp htools/scripts/katana_modules.sh $1/scripts/
+cp load_modules.sh $1/scripts
 cp htools/gadget-tools $1
 cp htools/gadget-run $1
 cp htools/param_template.txt $1
