@@ -10,7 +10,7 @@ export MuFLRPath=$cdir/MF
 export ClassPath=/home/z5278074/class_public
 
 # Load modules
-source htools/scripts/katana_modules.sh 
+source load_modules.sh 
 
 ########################################################
 

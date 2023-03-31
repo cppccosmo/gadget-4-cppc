@@ -30,7 +30,7 @@ sed -e s/TEMPLATE_CLASS_H0/${COSMO_H0}/g \
 	-e s+TEMPLATE_CLASS_F_DISTRIB+"${COSMO_FHDM}"+g \
 	-e s/TEMPLATE_CLASS_OH/${COSMO_OH}/g \
 	-e s/TEMPLATE_CLASS_THDM_TCMB/${DERIV_COSMO_THDM_TCMB}/g \
-	-e s/TEMPLATE_CLASS_DEG_HDM/${COSMO_GHDM}/g \
+	-e s/TEMPLATE_CLASS_M_HDM/${COSMO_MHDM}/g \
 	-e s/TEMPLATE_CLASS_W0/${COSMO_W0}/g \
 	-e s/TEMPLATE_CLASS_WA/${COSMO_WA}/g \
 	-e s/TEMPLATE_CLASS_SIG8/${COSMO_SIG8}/g \
@@ -60,7 +60,7 @@ echo "${OUTPUT_Z}" >> params_MuFLR-HDM.dat
 echo "${CLASS_ROOT}/out_tk.dat" >> params_MuFLR-HDM.dat
 echo "1" >> params_MuFLR-HDM.dat
 echo ${COSMO_THDMK} >> params_MuFLR-HDM.dat
-echo ${COSMO_GHDM} >> params_MuFLR-HDM.dat
+echo ${COSMO_MHDM} >> params_MuFLR-HDM.dat
 echo ${COSMO_FHDM} >> params_MuFLR-HDM.dat
 
 

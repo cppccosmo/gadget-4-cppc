@@ -220,11 +220,8 @@ int initialize_cosmoparam(struct cosmoparam *C, const char *params, int N_tau){
   do{ fgets(buf, sizeof buf, fp); } while(*buf=='#' || *buf=='\n');
   sscanf(buf,"%lg",&C->T_hdm_0_K);
   
-  //do{ fgets(buf, sizeof buf, fp); } while(*buf=='#' || *buf=='\n');
-  //sscanf(buf,"%lg",&C->m_hdm_eV);
-
   do{ fgets(buf, sizeof buf, fp); } while(*buf=='#' || *buf=='\n');
-  sscanf(buf,"%lg",&C->g_hdm);
+  sscanf(buf,"%lg",&C->m_hdm_eV);
 
   do{ fgets(buf, sizeof buf, fp); } while(*buf=='#' || *buf=='\n');
   sscanf(buf,"%s",C->file_hdm_distribution);
@@ -235,14 +232,13 @@ int initialize_cosmoparam(struct cosmoparam *C, const char *params, int N_tau){
   C->N_nu_massive = COSMOPARAM_NU_MASSIVE;
 
   C->Omega_cb_0 = C->Omega_m_0 - C->Omega_hdm_0;
-  double nu_hdm_K3 = C->g_hdm * C->T_hdm_0_K*C->T_hdm_0_K*C->T_hdm_0_K
-    * integrate_hdm_distribution_function(C);
-  //C->Omega_hdm_0 = 3.9931e-4 * nu_hdm_K3 * C->m_hdm_eV / (C->h*C->h); 
-  C->m_hdm_eV = C->Omega_hdm_0*C->h*C->h / (0.09905 * nu_hdm_K3);
+  double nu_hdm = integrate_hdm_distribution_function(C);
+  C->g_hdm = 126.87 * C->Omega_hdm_0 * C->Omega_m_0 * C->h*C->h
+    / ( nu_hdm * C->m_hdm_eV * C->T_hdm_0_K*C->T_hdm_0_K*C->T_hdm_0_K );
 
   //TESTING!!
-  printf("#initialize_cosmoparam: nu_hdm_K^3=%1.14g, Omega_hdm_0*h^2=%1.14g\n",
-	 nu_hdm_K3, C->Omega_hdm_0 * C->h * C->h);
+  printf("#initialize_cosmoparam: nu_hdm=%1.14g, deg_hdm=%1.14g\n",
+	 nu_hdm, C->g_hdm);
   fflush(stdout);
   
 

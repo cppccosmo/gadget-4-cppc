@@ -6,16 +6,15 @@ OPT=$1                           # 'start'           (LR/GLR/MF/HYB)
                                  # 'restart'         (MF/HYB)
                                  # 'postprocess'     (LR/GLR/MF/HYB)
 
-TYPE=1                           # 1: SELR
-                                 # 2: MFLR 
-                                 # 3: GLR 
-                                 # 4: HYB
-
+TYPE=1                           # 1: SELR, 2: MFLR, 3: GLR, 4: HYB
 SIMFOLDER='output'               # Output of simulation to consider 
 
 # Cosmology --------------------------------------------------------------------------------
 
 COSMO_MODEL=nu05                 # Cosmology model
+COSMO_MHDM=0.15                  # HDM mass
+COSMO_THDMK=1.95280830923360     # HDM component temperature today in K
+COSMO_FHDM=psd/f_fd0.dat         # HDM distribution function to pass for GLR
 COSMO_NS=0.9665                  # Primordial spectral index n_s
 COSMO_SIG8=0.7139                # Sigma8
 COSMO_H0=0.6766                  # Hubble paramter today in units of 100 km/s/Mpc
@@ -23,9 +22,6 @@ COSMO_OM=0.309641441545506       # Omega_m for all matter
 COSMO_OB=0.0489746816186967      # Omega_b for baryons
 COSMO_OH=0.0109220967035452      # Omega_h for the HDM component
 COSMO_TCMBK=2.7255               # CMB temperature today in K
-COSMO_THDMK=1.95280830923360     # HDM component temperature today in K
-COSMO_FHDM=psd/f_fd0.dat         # HDM distribution function to pass for GLR
-COSMO_GHDM=3.044                 # Neff for the HDM component
 COSMO_W0=-1.0                    # Dark energy equation of state 
 COSMO_WA=0.0                     # ??
 
@@ -46,7 +42,6 @@ ZIN=99.0                         # Initial redshift in gadget
 BOXSIZE=512.0                    # BoxSize for gadget in Mpc/h
 OUTPUT_G="49 19 9 5 3 2 1 0"     # Gadget snapshot output redshifts 
 LIN_HDM=1                        # NLR for linear neutrinos/hdm
-
 
 ############################################################################################
 # TO DO
@@ -91,7 +86,7 @@ case $OPT in
     
     echo ''
     echo 'Starting simulation with model' $COSMO_MODEL 
-    source scripts/cosmofiles.sh  $CLASS_RES # Create mf file, modify .ini and param.txt files to match cosmology 
+    source scripts/cosmofiles.sh  $CLASS_RES # Create mf file, modify .ini file to match cosmology 
     echo ''
 
     echo 'Running class ...'
@@ -109,6 +104,14 @@ case $OPT in
     
     INPUT=mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
     OUTPUT_BASE=${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}
+    
+    LI=$(cat $INPUT | grep "momenta" | awk -F': ' '{print $3}')
+    LLI=$(cat $INPUT | grep "momenta" | awk -F': ' '{print $3}' | awk '{print NF}' )
+
+    touch tau_table.txt
+    for ((I=0; I<${LLI}; I++)); do
+        echo $LI | awk -v j=$(echo $I+1 | bc) '{print $j}' | awk '{printf("%.9f\n",$1)}' >> tau_table.txt
+    done
 
     NZ=$(echo $(grep "^[0-9]" ${INPUT} | wc -l) "/${NK}" | bc)
 
