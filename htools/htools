@@ -43,6 +43,12 @@ BOXSIZE=512.0                    # BoxSize for gadget in Mpc/h
 OUTPUT_G="49 19 9 5 3 2 1 0"     # Gadget snapshot output redshifts 
 LIN_HDM=1                        # NLR for linear neutrinos/hdm
 
+# Post -------------------------------------------------------------------------------------
+
+SNAP_BASE=snapshot
+SNAP=7
+PTYPE=1
+
 ############################################################################################
 # TO DO
 
@@ -176,20 +182,13 @@ case $OPT in
     ;;
 
     postprocess)
-    #mkdir -p postprocess 
-    #mkdir -p postprocess/plots postprocess/spectra postprocess/render
-    #echo 'Post-processing simulation from folder' $SimFolder
-    
-    #python3 scripts/post.py -sf $SimFolder -pt $ptype  -sf $SimFolder -pp $pindex -sa $snap_number 
-    
-    #case $pindex in
-    #    0)
-    #        python3 scripts/post.py -sf $SimFolder -pt $ptype  -sf $SimFolder -pp $pindex -sa $snap_number 
-    #    ;;
-    #    1)
-    #        python3 scripts/post.py -sf $SimFolder -pp $pindex -sa $snap_number 
-    #    ;;
-    #esac
+    mkdir -p postprocess
+    mkdir -p postprocess/plots postprocess/spectra #postprocess/render
+
+    echo 'Post-processing simulation from folder' $SIMFOLDER
+    SNAPSHOT=$(printf "%03d" $SNAP)
+    echo "File: ${SNAP_BASE}_${SNAPSHOT}.hdf5"
+    python3 scripts/post.py $SIMFOLDER ${SNAP_BASE}_${SNAPSHOT} $PTYPE
     ;;
 esac
 

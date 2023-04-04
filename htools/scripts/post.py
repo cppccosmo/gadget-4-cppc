@@ -1,16 +1,70 @@
 import sys
 import argparse
+import h5py as h5
 import numpy as np
 import matplotlib.pyplot as plt
 import Pk_library as PKL
 import MAS_library as MASL
 
 
-parser = argparse.ArgumentParser()
+simfolder = sys.argv[1]
+fname     = sys.argv[2]
+ptype     = int(sys.argv[3])
 
-parser.add_argument('-pt',"--part_type",dest="ptype",type=int)
 
-patype = [ptype]
+
+def PowerSpectrum(fname,ptype,axis=0,verb=True):
+    '''
+    Computes the power spectrum of the divergence of a 3D velocity field
+    As input pass the snapshot name, without the .hdf5 extension, and the particle type
+    Returns k,Pk,Nmodes
+    '''
+    snap    = str(simfolder)+'/'+str(fname)
+    f       = h5.File(str(simfolder)+'/'+str(fname)+'.hdf5','r')
+    N       = f['Header'].attrs['NumPart_Total'][ptype]
+    n       = int(np.ceil(N**(1/3)))
+    BoxSize = f['Header'].attrs['BoxSize']
+    grid    = f['Parameters'].attrs['GridSize']
+    MAS     = 'CIC'  
+    axis    = 0
+    threads = 16
+    ptypes  = [ptype] 
+
+
+    delta = MASL.density_field_gadget(snap, ptypes, grid, MAS, do_RSD=False, axis=axis, verbose=verb)
+    Pk    = PKL.Pk(delta, BoxSize, axis, MAS, threads, verbose=verb)
+    k       = Pk.k3D
+    Pk0     = Pk.Pk[:,0] #monopole
+    Pk2     = Pk.Pk[:,1] #quadrupole
+    Pk4     = Pk.Pk[:,2] #hexadecapole
+    Pkphase = Pk.Pkphase #power spectrum of the phases
+    Nmodes  = Pk.Nmodes3D
+    np.savetxt("postprocess/spectra/"+str(simfolder)+"_ps.txt",np.column_stack((k,Pk0,Pk2,Pk4,Pkphase,Nmodes)))
+    #return k,Pk0,Pk2,Pk4,Pkphase,Nmodes
+    return 
+
+
+def PS_theta(fname,ptype):
+    '''
+    Computes the power spectrum of the divergence of a 3D velocity field
+    As input pass the snapshot name, without the .hdf5 extension, and the particle type
+    Returns k,Pk,Nmodes
+    '''
+    f       = h5.File(fname+'.hdf5','r')
+    N       = f['Header'].attrs['NumPart_Total'][ptype]
+    n       = int(np.ceil(N**(1/3)))
+    BoxSize = f['Header'].attrs['BoxSize']
+    grid    = f['Parameters'].attrs['GridSize']
+    MAS     = 'CIC'  
+    axis    = 0
+    threads = 16
+
+    Vx = np.array(f['PartType%d/Velocities'%ptype][:,0]).reshape((n,n,n)).astype('float32')
+    Vy = np.array(f['PartType%d/Velocities'%ptype][:,1]).reshape((n,n,n)).astype('float32')
+    Vz = np.array(f['PartType%d/Velocities'%ptype][:,2]).reshape((n,n,n)).astype('float32')
+
+    k, Pk, Nmodes = PKL.Pk_theta(Vx,Vy,Vz,BoxSize,axis,MAS,threads)
+    return k,Pk,Nmodes
 
 def projection(simfol,snap_num,patype,axis,mtype):
     snapshot  = str(simfol)+'/snapshot_%3d'%snap_num
@@ -42,5 +96,5 @@ def projection(simfol,snap_num,patype,axis,mtype):
 #projection(args.simfol,args.snap_num,patype,axis,cmap)
 
 if __name__ == '__main__':
-    print("type:", patype)
-    #projection(args.simfol,args.snap_num,patype,axis,cmap)
+    PowerSpectrum(fname,ptype)
+    #projection(simfol,snap_num)
