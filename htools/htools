@@ -100,8 +100,8 @@ case $OPT in
     echo 'Done!'
     
     NK=$(grep "NK" info/log.txt | awk '{print $3}') 
-    N_MU=$(grep "N_MU" info/log.txt | awk '{print $3}') 
-    N_TAU=$(grep "N_TAU" info/log.txt | awk '{print $3}') 
+    N_MU=$(grep "N_MU" info/log.txt | sed -n 1p | awk '{print $3}') 
+    N_TAU=$(grep "N_TAU" info/log.txt |  sed -n 1p | awk '{print $3}') 
     
     echo ''
     echo 'Running MuFLR ...'
