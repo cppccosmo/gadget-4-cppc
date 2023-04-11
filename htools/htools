@@ -155,7 +155,7 @@ case $OPT in
         -e s/TEMPLATE_P_SIG8/${COSMO_SIG8}/ \
         -e s/TEMPLATE_P_BOXSIZE/${BOXSIZE}/ \
         -e s/TEMPLATE_P_NUMPARTS/${NPARTS}/ \
-        -e s/TEMPLATE_P_NUMHDM/${COSMO_GHDM}/ \
+        -e s/TEMPLATE_P_MASSHDM/${COSMO_MHDM}/ \
         -e s/TEMPLATE_P_NLR/${LIN_HDM}/ \
         -e s/TEMPLATE_POWERSPECTRUM/${PK_FILE}/ \
         -e s/TEMPLATE_GROWTHRATE/${THK_FILE}/ param_template.txt > param.txt

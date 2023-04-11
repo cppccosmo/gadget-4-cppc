@@ -171,8 +171,13 @@ void sim::begrun1(const char *parameterFile)
 
   /* This is initialised here because it will never be freed, so its best to have it in the deepest part of the stack */
 //#ifdef ADDITIONAL_GRID
-  Nulinear.tau_t_eV(0);
-
+  if (All.NLR == 3){
+      mpi_printf("Generalised SuperEasy linear response with HDM mass %.3f eV",Nulinear.m_hdm_eV_parser());
+      Nulinear.tau_t_eV_hdm(0);
+  }
+  else
+      Nulinear.tau_t_eV(0);
+  
   if (All.NLR == 0 && All.NumHDM > 0.){
       Terminate("You selected a LCDM run (NLR=0), however NumHDM is set to %.3f. You need to set it to zero in the param file!\n",All.NumHDM);
   }

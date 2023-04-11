@@ -33,7 +33,8 @@ OmegaNuLin                TEMPLATE_P_OH
 HubbleParam               TEMPLATE_P_H0
 Hubble                    100.0
 BoxSize                   TEMPLATE_P_BOXSIZE
-NumHDM                    TEMPLATE_P_NUMHDM
+NumHDM                    3.044
+MassHDM                   TEMPLATE_P_MASSHDM
 NLR                       TEMPLATE_P_NLR
 
 %---- Output frequency and output paramaters

@@ -398,6 +398,10 @@ possible, and intermediate forms in principle as well.
 
 -------
 
+**MassHDM**
+
+-------
+
 **N_tau_part**
 
 -------

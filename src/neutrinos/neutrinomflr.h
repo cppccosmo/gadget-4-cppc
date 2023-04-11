@@ -27,8 +27,11 @@ public:
 #define N_nu_tot (2*N_tau*N_mu)
 #define N_EQ (2*N_tau*N_mu+2)
 
-    // homogeneous evolution functions
+    // tables with momenta
     double tau_t_eV(int t);
+    double tau_t_eV_hdm(int t);
+    
+    // homogeneous evolution functions
     double v_t_eta(int t, double eta);
     double v2_t_eta(int t, double eta);
     double v2_t_eta_REL(int t, double eta);
@@ -47,6 +50,7 @@ public:
     double OF_eta(int F, double eta);
     double Poisson(double eta, double k, const double *y);
     double m_nu_eV_parser(void);
+    double m_hdm_eV_parser(void);
     int N_EQ_parser(void);
     int N_nu_tot_parser(void);
     int N_tau_parser(void);
@@ -86,7 +90,7 @@ public:
     const double T_CMB_0_K = 2.726;
    
 #define m_nu_eV (93.259*(All.OmegaNuLin+All.OmegaNuPart)*All.HubbleParam*All.HubbleParam/All.NumHDM)
-// #define m_hdm_eV = All.
+#define m_hdm_eV (All.MassHDM)
 #define Omega_nu_t_0 ((All.OmegaNuLin+All.OmegaNuPart)/N_tau)
    
 #define T_CMB_0_K_4 (T_CMB_0_K*T_CMB_0_K*T_CMB_0_K*T_CMB_0_K)

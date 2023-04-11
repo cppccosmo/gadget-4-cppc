@@ -146,6 +146,7 @@ struct global_data_all_processes : public parameters
 
   double BoxSize; /**< Boxsize in case periodic boundary conditions are used */
   double NumHDM; /**< Number of massive HDM species (usually neutrinos) */
+  double MassHDM; /**< Mass of the HDM component */
   int NLR;
 
 #ifdef ADDITIONAL_GRID

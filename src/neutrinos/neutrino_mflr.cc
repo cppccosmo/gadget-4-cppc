@@ -61,6 +61,47 @@ double nulinear::tau_t_eV(int t) {
     }
     return tau_table_eV[t];
 }
+double nulinear::tau_t_eV_hdm(int t){
+    
+    static int init = 0;
+    double *tau_table;
+
+    if(!init)
+    {
+        FILE* fp = fopen("tau_table.txt", "r");
+        if (fp == NULL) {
+            printf("Error: unable to open file\n");
+            exit(1);
+        }
+
+        int num_lines = 0;
+        char c;
+        while ((c = fgetc(fp)) != EOF) {
+            if (c == '\n') {
+                num_lines++;
+            }
+        }
+        
+        tau_table = (double *)Mem.mymalloc_movable(&tau_table, "tau_table_eV", num_lines * sizeof(double));
+        fseek(fp, 0, SEEK_SET);
+
+        double value;
+        int i = 0;
+        while (fscanf(fp, "%lf", &value) == 1) {
+            tau_table[i] = value;
+            i++;
+        }
+        fclose(fp);
+    }
+    
+    if(t == -1){
+        Mem.myfree(tau_table);
+        init = 0;
+        return 0;
+     }
+    return tau_table[t];
+}
+
 
 // speed -tau_t / tau0_t of each neutrino species
 double nulinear::v_t_eta(int t, double eta) {
@@ -442,7 +483,7 @@ int nulinear::evolve_step(double k, double z0, double z1, double *w) {
 /* Super-easy and Generalised Super-Easy functions */
 
 double nulinear::fs_p(double k, int alpha){
-    double mass_eV = Nulinear.m_nu_eV_parser();
+    double mass_eV = Nulinear.m_hdm_eV_parser();
     double tau_eV  = Nulinear.tau_t_eV(alpha);
     double pref    = 0.00041;
     return pref * sqrt(All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * mass_eV / tau_eV ;
@@ -464,11 +505,10 @@ double nulinear::poisson_gen_mod_fac(double k, double a) {
 
          mod_fac += (Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i)) / \
 	(k * k + k * Nulinear.fs_p(k,i) + Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i));
-
-    // With additional time dependence
-    //     mod_fac += (Nulinear::fs_p(k,i) * Nulinear::fs_p(k,i)) / \
-    //	(k * k + pow(All.Time,1./6.) * k * Nulinear::fs_p(k,i) + Nulinear::fs_p(k,i) * Nulinear::fs_p(k,i));
-
+    /*  With additional time dependence
+         mod_fac += (Nulinear::fs_p(k,i) * Nulinear::fs_p(k,i)) / \
+    	(k * k + pow(All.Time,1./6.) * k * Nulinear::fs_p(k,i) + Nulinear::fs_p(k,i) * Nulinear::fs_p(k,i));
+    */
      }
 
      mod_fac += -1.;
@@ -490,6 +530,10 @@ double nulinear::compute_deviation(double k, double z, double *w) {
 
 double nulinear::m_nu_eV_parser(void) {
     return m_nu_eV;
+}
+
+double nulinear::m_hdm_eV_parser(void) {
+    return m_hdm_eV;
 }
 
 int nulinear::N_EQ_parser(void) {
