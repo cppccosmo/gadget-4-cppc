@@ -2711,8 +2711,10 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
         sprintf(buf, "%s/neutrino_stream_data", All.OutputDir);
         mkdir(buf, 02755);
 
-        sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
-        sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time);
+        //sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
+        //sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time);
+        sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%03d.csv", All.OutputDir, All.SnapshotFileCount);
+        sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%03d.csv", All.OutputDir, All.SnapshotFileCount);
 
         FILE *fd_delta, *fd_theta; 
 
@@ -2755,8 +2757,10 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
         if(ThisTask == nt) {
           printf("Task %d writing to file\n", ThisTask);
 
-          sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
-          sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time);
+          //sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
+          //sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time);
+          sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%03d.csv", All.OutputDir, All.SnapshotFileCount);
+          sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%03d.csv", All.OutputDir, All.SnapshotFileCount);
  
           FILE *fd_delta, *fd_theta;
         
@@ -2799,8 +2803,10 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
       if(ThisTask == NTask-1) {
         printf("Task %d writing to file\n", ThisTask);
 
-        sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
-        sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time); 
+        //sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%.3f.csv", All.OutputDir, All.Time);
+        //sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%.3f.csv", All.OutputDir, All.Time); 
+        sprintf(neutrino_delta_stream_fname, "%s/neutrino_stream_data/neutrino_delta_stream_%03d.csv", All.OutputDir, All.SnapshotFileCount);
+        sprintf(neutrino_theta_stream_fname, "%s/neutrino_stream_data/neutrino_theta_stream_%03d.csv", All.OutputDir, All.SnapshotFileCount); 
  
         FILE *fd_delta, *fd_theta;
           
