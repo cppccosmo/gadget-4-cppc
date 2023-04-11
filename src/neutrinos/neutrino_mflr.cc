@@ -442,8 +442,10 @@ int nulinear::evolve_step(double k, double z0, double z1, double *w) {
 /* Super-easy and Generalised Super-Easy functions */
 
 double nulinear::fs_p(double k, int alpha){
- 	return sqrt(1.5 * All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * \
-              Nulinear.m_nu_eV_parser() / Nulinear.tau_t_eV(alpha);
+    double mass_eV = Nulinear.m_nu_eV_parser();
+    double tau_eV  = Nulinear.tau_t_eV(alpha);
+    double pref    = 0.00041;
+    return pref * sqrt(All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * mass_eV / tau_eV ;
 }
 
 double nulinear::poisson_mod_fac(double k, double a) {
