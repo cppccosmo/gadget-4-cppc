@@ -1,41 +1,24 @@
 #!/bin/bash
 
-############################################################################################
-# Main options
 OPT=$1                           # 'start'           (LR/GLR/MF/HYB)
                                  # 'restart'         (MF/HYB)
                                  # 'postprocess'     (LR/GLR/MF/HYB)
 
-TYPE=1                           # 1: SELR, 2: MFLR, 3: GLR, 4: HYB
+#TYPE=1                           # 1: SELR, 2: MFLR, 3: GLR, 4: HYB
 SIMFOLDER='output'               # Output of simulation to consider 
-
-# Cosmology --------------------------------------------------------------------------------
-
-COSMO_MODEL=nu05                 # Cosmology model
-COSMO_MHDM=0.15                  # HDM mass
-COSMO_THDMK=1.95280830923360     # HDM component temperature today in K
-COSMO_FHDM=psd/f_fd0.dat         # HDM distribution function to pass for GLR
-COSMO_NS=0.9665                  # Primordial spectral index n_s
-COSMO_SIG8=0.7139                # Sigma8
-COSMO_H0=0.6766                  # Hubble paramter today in units of 100 km/s/Mpc
-COSMO_OM=0.309641441545506       # Omega_m for all matter
-COSMO_OB=0.0489746816186967      # Omega_b for baryons
-COSMO_OH=0.0109220967035452      # Omega_h for the HDM component
-COSMO_TCMBK=2.7255               # CMB temperature today in K
-COSMO_W0=-1.0                    # Dark energy equation of state 
-COSMO_WA=0.0                     # ??
 
 # Class ------------------------------------------------------------------------------------
 
+COSMO_MODEL=nu01                 # Cosmology model
 CLASS_RES=0                      # Class precision 0: Low, 1: High
 
 # Multifluid -------------------------------------------------------------------------------
 
-OUTPUT_Z="99 19 9 5 0"
+OUTPUT_Z="99 19 9 5 0"           # Output redshifts for the MultiFluid run
 OUTPUT_NL=0
 OUTPUT_PRINT=2
 
-# Gadget-4 ---------------------------------------------------------------------------------
+# N-body   ---------------------------------------------------------------------------------
 
 NPARTS=512                       # Number of CDM particles
 ZIN=99.0                         # Initial redshift in gadget
@@ -45,40 +28,24 @@ LIN_HDM=1                        # NLR for linear neutrinos/hdm
 
 # Post -------------------------------------------------------------------------------------
 
-SNAP_BASE=snapshot
-SNAP=7
-PTYPE=1
+SNAP_BASE=snapshot               # Name of snapshot base 
+SNAP=7                           # Snapshot number, format %03d
+PTYPE=1                          # Particle type to analyse
+          
+# TO FINISH
 
-############################################################################################
-# TO DO
-
-#MfIn='MuFLR_params'             # Generates MuFLR input file, placed in inifiles,           
-#MfOut='MuFLR_out'               # Output of MuFLR result, will go in raw_files,              
-#PrintOpt=0                      # Print options. 0: D_cb, f, neutrino density,                
-
-# Opts for preprocessing
-#PkOut='PowerSpectrum'           # Filename for PowerSpectrumFile in param.txt,              
-#GFOut='GrowthRate'              # Filename for GrowthRateFile in param.txt,                 
-#CBOut='CBPowerSpectrum'         # Filename for CBPowerSpectrumFile in param.txt,                  
-
-#snap_number=1                   # Select a snapshot to restart from or postprocess           
-#aRes=0.198                      # Scale factor for Hybrid restart, .3f format!              
 #iStream=0                       # First stream to covert                      
 #Streams=10                      # Streams to convert                  
-#mass=0.31                       # Neutrino mass in eV                                        
-
-# Opts  for postprocessing
 #pindex=0                        # 0: Projection plot 
-                                # 1: Power spectra (delta, velocity, momentum) per ptype
-                                # 2: Neutrino combined spectra 
+                                 # 1: Power spectra (delta, velocity, momentum) per ptype
+                                 # 2: Neutrino combined spectr
 
-#ptype=1                         # Particle type
-
-############################################################################################
 ############################################################################################
  
 
 cdir=$(pwd)
+source scripts/cosmologies.sh $COSMO_MODEL
+echo $COSMO_MHDM
 
 case $OPT in
 
