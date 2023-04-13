@@ -99,7 +99,10 @@ case $OPT in
     done
     echo ''
     echo 'Setting files for Gadget ...'
-    
+
+    if test -f "outputs.txt"; then
+        rm outputs.txt
+    fi
     touch outputs.txt
     NR=$(echo $OUTPUT_G | awk '{print NF}')
     for ((IZ=0; IZ<${NR}; IZ++)); do
