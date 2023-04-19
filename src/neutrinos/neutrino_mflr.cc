@@ -480,8 +480,7 @@ int nulinear::evolve_step(double k, double z0, double z1, double *w) {
     return 0;
 }
 
-/* Super-easy and Generalised Super-Easy functions */
-
+/* Generalised SuperEasy p-dep. free-streaming scale  */
 double nulinear::fs_p(double k, int alpha){
     double mass_eV = Nulinear.m_hdm_eV_parser();
     double tau_eV  = Nulinear.tau_t_eV(alpha);
@@ -489,6 +488,7 @@ double nulinear::fs_p(double k, int alpha){
     return pref * sqrt(All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * mass_eV / tau_eV ;
 }
 
+/* Integrated Super-Easy Poisson modification factor */
 double nulinear::poisson_mod_fac(double k, double a) {
     double fnu = All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
     double kfs = 1.5 * sqrt(All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * Nulinear.m_nu_eV_parser();
@@ -496,27 +496,24 @@ double nulinear::poisson_mod_fac(double k, double a) {
     return ((k + kfs) * (k + kfs)) / ((k + kfs) * (k + kfs) - kfs * kfs * fnu); 
 }
 
+/* Generalised Super-Easy Poisson modification factor */
 double nulinear::poisson_gen_mod_fac(double k, double a) {
-
+     
+     double fcb = All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
      double fnu = All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
-     double mod_fac = 0.;
+     
+     double sumN = 0.0;     // This takes sum_i G_i
+     double mod_fac = 0.0;  // This takes the full modification factor
 
      for(int i=0; i<Nulinear.N_tau_parser(); i++){
-
-         mod_fac += (Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i)) / \
-	(k * k + k * Nulinear.fs_p(k,i) + Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i));
-    /*  With additional time dependence
-         mod_fac += (Nulinear::fs_p(k,i) * Nulinear::fs_p(k,i)) / \
-    	(k * k + pow(All.Time,1./6.) * k * Nulinear::fs_p(k,i) + Nulinear::fs_p(k,i) * Nulinear::fs_p(k,i));
-    */
+         sumN += (Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i)) / (k * k + k * Nulinear.fs_p(k,i) + Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i));
      }
 
-     mod_fac += -1.;
-
-     return 1. + mod_fac * fnu / Nulinear.N_tau_parser();
-
+     sumN *= fnu/N_tau; 
+     
+     mod_fac = fcb * (1 + sumN) + sumN * sumN; // Second order expression of the ModFactor
+    
      return mod_fac;
-     //return ((k + kfs) * (k + kfs)) / ((k + kfs) * (k + kfs) - kfs * kfs * fnu);
 }
 
 
