@@ -7,7 +7,7 @@ export MuFLRPath=$cdir/MF
 ########################################################
 
 # Modify your path here 
-export ClassPath=/home/z5278074/class_public
+export ClassPath=~/class_public
 
 # Load modules
 source load_modules.sh $2
