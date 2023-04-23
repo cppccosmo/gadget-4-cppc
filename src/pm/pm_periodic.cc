@@ -2998,11 +2998,9 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
               deconv    = ff * ff * ff * ff;
 
               if(All.NLR == 3) { // Generalised SuperEasy linear response
-              
-                 double ser_mod_fac = Nulinear.poisson_gen_mod_fac(sqrt(k2), All.Time);
-                 smth *= ser_mod_fac;
+		 double gse_mod_fac = Nulinear.poisson_gen_mod_fac(sqrt(k2), All.Time);
+		 smth *= gse_mod_fac;
               }
-
 
               if(All.NLR == 2) { // multi-fluid neutrino linear response
 
@@ -3039,7 +3037,13 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
               fft_of_rhogrid[ip][0] *= smth;
               fft_of_rhogrid[ip][1] *= smth;
 #endif
-        }
+        } // End of nested for loops 
+	
+      // DEBUG PRINTS 
+      //mpi_printf("modfac (SE)  at k->0   is %.5f\n",Nulinear.poisson_mod_fac(0.0001, All.Time));
+      //mpi_printf("modfac (GSE) at k->0   is %.5f\n",Nulinear.poisson_gen_mod_fac(0.0001, All.Time));
+      //mpi_printf("modfac (SE)  at k->inf is %.5f\n",Nulinear.poisson_mod_fac(1.3, All.Time));
+      //mpi_printf("modfac (GSE) at k->inf is %.5f\n",Nulinear.poisson_gen_mod_fac(1.3, All.Time));
 
 #ifndef GRAVITY_TALLBOX
 #ifdef FFT_COLUMN_BASED

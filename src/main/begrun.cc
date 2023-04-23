@@ -172,7 +172,10 @@ void sim::begrun1(const char *parameterFile)
   /* This is initialised here because it will never be freed, so its best to have it in the deepest part of the stack */
 //#ifdef ADDITIONAL_GRID
   if (All.NLR == 3){
-      mpi_printf("Generalised SuperEasy linear response with HDM mass %.3f eV",Nulinear.m_hdm_eV_parser());
+      mpi_printf("\nGeneralised SuperEasy linear response with HDM mass %.3f eV and %d bins\n",Nulinear.m_hdm_eV_parser(),Nulinear.N_tau_parser());
+      double fcb = All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
+      double fnu = All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
+      mpi_printf("Using fcb = %.5f, fnu = %.5f",fcb,fnu);
       Nulinear.tau_t_eV_hdm(0);
   }
   else

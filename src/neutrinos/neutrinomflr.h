@@ -73,7 +73,7 @@ public:
     double compute_deviation(double k, double z, double *w);
 
     // SuperEasy linear response functions
-    double fs_p(double k, int alpha);
+    double fs_p(int alpha);
     double poisson_mod_fac(double k, double a);
     double poisson_gen_mod_fac(double k, double a);
 

@@ -481,7 +481,7 @@ int nulinear::evolve_step(double k, double z0, double z1, double *w) {
 }
 
 /* Generalised SuperEasy p-dep. free-streaming scale  */
-double nulinear::fs_p(double k, int alpha){
+double nulinear::fs_p(int alpha){
     double mass_eV = Nulinear.m_hdm_eV_parser();
     double tau_eV  = Nulinear.tau_t_eV(alpha);
     double pref    = 100.0 / 299792.0 * pow(1.5,0.5);
@@ -498,22 +498,14 @@ double nulinear::poisson_mod_fac(double k, double a) {
 
 /* Generalised Super-Easy Poisson modification factor */
 double nulinear::poisson_gen_mod_fac(double k, double a) {
-     
      double fcb = All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
      double fnu = All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
-     
-     double sumN = 0.0;     // This takes sum_i G_i
-     double mod_fac = 0.0;  // This takes the full modification factor
-
+     double sumN = 0.0;  // This takes sum_i G_i
      for(int i=0; i<Nulinear.N_tau_parser(); i++){
-         sumN += (Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i)) / (k * k + k * Nulinear.fs_p(k,i) + Nulinear.fs_p(k,i) * Nulinear.fs_p(k,i));
+         double kfs  = Nulinear.fs_p(i);
+	 sumN += (kfs*kfs) / (k*k + k*kfs + kfs*kfs);
      }
-
-     sumN *= fnu/N_tau; 
-     
-     mod_fac = fcb * (1 + sumN) + sumN * sumN; // Second order expression of the ModFactor
-    
-     return mod_fac;
+     return 1 + fnu/Nulinear.N_tau_parser()*sumN;
 }
 
 
