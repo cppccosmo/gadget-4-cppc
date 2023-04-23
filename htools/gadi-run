@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#PBS -P hb19
+#PBS -q normal
+
+#PBS -l walltime=6:00:00
+#PBS -l storage=scratch/hb19
+
+#PBS -l mem=1500gb
+#PBS -l ncpus=1536
+#PBS -l wd
+
+#PBS -M g.pierobon@unsw.edu.au
+#PBS -m e
+#PBS -N gse_N50
+
+source scripts/load_modules.sh gadi
+
+mpirun -np $PBS_NCPUS ./Gadget4 param.txt | tee log.txt

@@ -19,7 +19,8 @@ cp htools/scripts/cosmofiles.sh $1/scripts/
 cp htools/scripts/cosmologies.sh $1/scripts/
 cp load_modules.sh $1/scripts
 cp htools/gadget-tools $1
-cp htools/gadget-run $1
+cp htools/gadi-run $1
+cp htools/katana-run $1
 cp htools/param_template.txt $1
 cp htools/class_template_LR.ini $1 
 cp htools/class_template_HR.ini $1 

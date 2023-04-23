@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#PBS -l select=1:ncpus=32:mem=95gb:mpiprocs=32
+#PBS -l walltime=24:00:00
+#PBS -N job
+
+# In case you want to run on infiniband nodes activate this 
+##PBS -l ib=yes
+
+cd $PBS_O_WORKDIR
+source scripts/load_modules.sh katana
+
+mpirun -np $NCPUS ./Gadget4 param.txt | tee log.txt
+
+#mpirun -np $NCPUS ./Gadget4-mf-restart param.txt | tee log_mf_restart.txt
+#mpirun -np $NCPUS ./Gadget4-hybrid-restart param_restart.txt | tee log_hybrid_restart.txt
+    
