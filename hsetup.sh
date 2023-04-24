@@ -26,6 +26,25 @@ else
     mkdir $1
 fi
 
+NTAU1=$(grep "const int N_tau = " MF/AU_cosmofunc.h | sed -e s/"const int N_tau = "//g -e s/";.*$"//g)
+NMU1=$(grep "const int N_mu = " MF/AU_cosmofunc.h | sed -e s/"const int N_mu = "//g -e s/";.*$"//g)
+NTAU2=$(grep "N_TAU" Config.sh | awk -F'=' '{print $2}')
+NMU2=$(grep "N_MU" Config.sh | awk -F'=' '{print $2}')
+
+if [[ $NTAU1 != $NTAU2 ]];
+then echo 'MuFLR has N_tau =' $NTAU1 ', while gadget-4 has N_tau =' $NTAU2
+ echo 'Set the parameters equally and recompile!'
+ rm -r $1
+ exit 1
+fi
+
+if [[ $NMU1 != $NMU2 ]];
+then echo 'MuFLR has N_mu =' $NMU1 ', while gadget-4 has N_mu =' $NMU2
+ echo 'Set the parameters equally and recompile!'
+ rm -r $1
+ exit 1
+fi
+
 while true; do
   read -p 'Do you want to restart a MultiFluid simulation? [y/n] ' RES_MF
   case $RES_MF in

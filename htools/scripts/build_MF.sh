@@ -12,15 +12,16 @@ NMU2=$(grep "N_MU" Config_mf_restart.sh | awk -F'=' '{print $2}')
 if [[ $NTAU1 != $NTAU2 ]];
 then echo 'MuFLR has N_tau =' $NTAU1 ', while gadget-4 has N_tau =' $NTAU2
  echo 'Set the parameters equally and recompile!'
+ rm -r $1
  exit 1
 fi
 
 if [[ $NMU1 != $NMU2 ]];
 then echo 'MuFLR has N_mu =' $NMU1 ', while gadget-4 has N_mu =' $NMU2
  echo 'Set the parameters equally and recompile!'
+ rm -r $1
  exit 1
 fi
-
 
 echo 'Copying htools in' $1 
 cp $ClassPath/class $1
