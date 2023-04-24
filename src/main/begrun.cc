@@ -171,22 +171,85 @@ void sim::begrun1(const char *parameterFile)
 
   /* This is initialised here because it will never be freed, so its best to have it in the deepest part of the stack */
 //#ifdef ADDITIONAL_GRID
-  if (All.NLR == 3){
-      mpi_printf("\nGeneralised SuperEasy linear response with HDM mass %.3f eV and %d bins\n",Nulinear.m_hdm_eV_parser(),Nulinear.N_tau_parser());
-      double fcb = All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
-      double fnu = All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
-      mpi_printf("Using fcb = %.5f, fnu = %.5f",fcb,fnu);
-      Nulinear.tau_t_eV_hdm(0);
-  }
-  else
-      Nulinear.tau_t_eV(0);
-  
-  if (All.NLR == 0 && All.NumHDM > 0.){
-      Terminate("You selected a LCDM run (NLR=0), however NumHDM is set to %.3f. You need to set it to zero in the param file!\n",All.NumHDM);
-  }
+  switch (All.NLR){
+	  case 0:
+            {
+                  if (All.NumHDM > 0.)
+      		      Terminate("You selected a LCDM run (NLR=0), however NumHDM is set to %.3f. You need to set it to zero in the param file!\n",All.NumHDM);
+		  break;
+	    }
+	  case 1:
+	    {
+		  mpi_printf("\n---------------------------------------------------------------------\n");
+		  mpi_printf("NEUTRINOS/HDM: Integrated SuperEasy (ISE) linear response\n");
+		  mpi_printf("NEUTRINOS/HDM: Mass     = %.5f eV\n",Nulinear.m_nu_eV_parser());
+		  mpi_printf("NEUTRINOS/HDM: deg      = \n");
+		  mpi_printf("NEUTRINOS/HDM: Omega_nu = %.5f \n",All.OmegaNuLin+All.OmegaNuPart);
+		  mpi_printf("NEUTRINOS/HDM: f_nu     = %.5f \n",All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
+		  mpi_printf("NEUTRINOS/HDM: f_cb     = %.5f \n",All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
+		  mpi_printf("---------------------------------------------------------------------\n");
+		  break;
+	    }
+	  case 2:
+	    {
+		  Nulinear.tau_t_eV(0);
+
+		  int local_y_nu_size = 0, local_n_k = 0;
+		  if(PMGRID % NTask == 0) {
+		      local_n_k = PMGRID / NTask;
+		  } 
+		  else {
+		      if(ThisTask != NTask-1) {
+			local_n_k = (PMGRID - (PMGRID % NTask) ) / NTask;
+		      }
+		      if(ThisTask == NTask-1) {
+			local_n_k = PMGRID % NTask + (PMGRID - (PMGRID % NTask) ) / NTask;
+		      }
+		  }
+
+                  local_y_nu_size = local_n_k * (2 * Nulinear.N_tau * Nulinear.N_mu + 2);
+                  //printf("Task = %d,  PMGRID = %d, local_n_k = %d, local_y_nu_size = %d\n", ThisTask, PMGRID, local_n_k, local_y_nu_size);
+                  Nulinear.y_nu_dynamic = (double *)Mem.mymalloc_movable_clear(&Nulinear.y_nu_dynamic, "y_nu_dynamic", local_y_nu_size * sizeof(Nulinear.y_nu_dynamic));
+
+                  for(int i=0; i<local_y_nu_size; i++) {
+                      Nulinear.y_nu_dynamic[i] = 0;
+                  }
+		  mpi_printf("\n---------------------------------------------------------------------\n");
+		  mpi_printf("NEUTRINOS/HDM: MultiFluid (MF) linear response\n");
+		  mpi_printf("NEUTRINOS/HDM: Mass     = %.5f eV\n",Nulinear.m_nu_eV_parser());
+		  mpi_printf("NEUTRINOS/HDM: N_tau    = %d \n",Nulinear.N_tau_parser());
+		  mpi_printf("NEUTRINOS/HDM: N_mu     = %d \n",Nulinear.N_mu_parser());
+		  mpi_printf("NEUTRINOS/HDM: deg      = \n");
+		  mpi_printf("NEUTRINOS/HDM: Omega_nu = %.5f \n",All.OmegaNuLin+All.OmegaNuPart);
+		  mpi_printf("NEUTRINOS/HDM: f_nu     = %.5f \n",All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
+		  mpi_printf("NEUTRINOS/HDM: f_cb     = %.5f \n",All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
+		  mpi_printf("NEUTRINOS/HDM: Tau_0    = %.7f eV\n",Nulinear.tau_t_eV(0));
+		  mpi_printf("NEUTRINOS/HDM: Tau_%d   = %.7f eV\n",Nulinear.N_tau_parser()-1,Nulinear.tau_t_eV(Nulinear.N_tau_parser()-1));
+		  mpi_printf("---------------------------------------------------------------------\n");
+		  break;
+	    }
+	  case 3:
+	    {
+		  Nulinear.tau_t_eV_hdm(0);
+		  mpi_printf("\n---------------------------------------------------------------------\n");
+		  mpi_printf("NEUTRINOS/HDM: Generalised SuperEasy (GSE) linear response\n");
+		  mpi_printf("NEUTRINOS/HDM: Mass      = %.5f eV\n",Nulinear.m_hdm_eV_parser());
+		  mpi_printf("NEUTRINOS/HDM: N_tau     = %d \n",Nulinear.N_tau_parser());
+		  mpi_printf("NEUTRINOS/HDM: N_mu      = %d \n",Nulinear.N_mu_parser());
+		  mpi_printf("NEUTRINOS/HDM: deg       = \n");
+		  mpi_printf("NEUTRINOS/HDM: Omega_hdm = %.5f \n",All.OmegaNuLin+All.OmegaNuPart);
+		  mpi_printf("NEUTRINOS/HDM: f_hdm     = %.5f \n",All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
+		  mpi_printf("NEUTRINOS/HDM: f_cb      = %.5f \n",All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
+		  mpi_printf("NEUTRINOS/HDM: Tau_0     = %.7f eV\n",Nulinear.tau_t_eV_hdm(0));
+		  mpi_printf("NEUTRINOS/HDM: Tau_%d    = %.7f eV\n",Nulinear.N_tau_parser()-1,Nulinear.tau_t_eV_hdm(Nulinear.N_tau_parser()-1));
+		  mpi_printf("---------------------------------------------------------------------\n");
+		  break;
+	    }
+  } // Switch ends 
 
 //#endif
-
+  
+  /*
   if(All.NLR == 2) {
     int local_y_nu_size = 0, local_n_k = 0;
 
@@ -212,6 +275,7 @@ void sim::begrun1(const char *parameterFile)
     }
 
   }
+  */
 
   if(All.OutputListOn)
     All.read_outputlist(All.OutputListFilename);
