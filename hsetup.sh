@@ -84,7 +84,7 @@ case $RES_HYB in
             ;;
             n) 
                 echo 'Preparing LR'
-                source htools/scripts/build_LR.sh  # LR only
+                source htools/scripts/build_LR.sh $1 $2 # LR only
             ;;
         esac
     ;;
