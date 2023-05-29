@@ -18,13 +18,21 @@ cp htools/scripts/*.py $1/scripts/
 cp htools/scripts/cosmofiles.sh $1/scripts/
 cp htools/scripts/cosmologies.sh $1/scripts/
 cp load_modules.sh $1/scripts
-cp htools/gadget-tools $1
-cp htools/gadi-run $1
-cp htools/katana-run $1
 cp htools/param_template.txt $1
 cp htools/class_template_LR.ini $1 
 cp htools/class_template_HR.ini $1 
 cp MF/distribution_functions/* $1/psd
+
+case $2 in
+    katana)
+	cp htools/katana-run $1
+	cp htools/katana-tools $1
+    ;;
+    gadi)
+	cp htools/gadi-run $1
+	cp htools/gadi-tools $1
+    ;;
+esac
 
 echo 'Compiling MuFLR ...'
 

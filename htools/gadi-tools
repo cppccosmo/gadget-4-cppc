@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#PBS -P hb19
+#PBS -q normal
+
+#PBS -l walltime=2:00:00
+#PBS -l storage=scratch/hb19
+
+#PBS -l mem=10gb
+#PBS -l ncpus=48
+#PBS -l wd
+
+#PBS -M g.pierobon@unsw.edu.au
+#PBS -m e
+#PBS -N tools
+
+module purge
+module load gcc gsl
+
+export OMP_NUM_THREADS=48
+
+./htools start 

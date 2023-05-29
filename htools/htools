@@ -114,10 +114,11 @@ case $OPT in
     PK_FILE=${OUTPUT_BASE}_z${SEL_RED}_Pk.txt
     THK_FILE=${OUTPUT_BASE}_z${SEL_RED}_f.txt
     COSMO_OL=$(echo 1 - $COSMO_OM | bc | awk '{printf("%.4f",$0)}')    
+    COSMO_OMM=$(echo $COSMO_OM - $COSMO_OH| bc | awk '{printf("%.4f",$0)}')    
     AIN=$(echo $ZIN | awk '{print 1/(1+$1)}')
 
     sed -e s/TEMPLATE_P_ZIN/${AIN}/ \
-        -e s/TEMPLATE_P_OM/${COSMO_OM}/ \
+        -e s/TEMPLATE_P_OM/${COSMO_OMM}/ \
         -e s/TEMPLATE_P_OL/${COSMO_OL}/ \
         -e s/TEMPLATE_P_OB/${COSMO_OB}/ \
         -e s/TEMPLATE_P_OH/${COSMO_OH}/ \

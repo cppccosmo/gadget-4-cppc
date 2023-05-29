@@ -96,7 +96,7 @@ $(info EXEC: $(EXEC))
 $(info )
 
 
-PYTHON   = python
+PYTHON   = python3
 
 RESULT     := $(shell CONFIG=$(CONFIG) PYTHON=$(PYTHON) BUILD_DIR=$(BUILD_DIR) SRC_DIR=$(SRC_DIR) CURDIR=$(CURDIR) make -f buildsystem/Makefile.config)
 $(info $(RESULT))

@@ -33,14 +33,14 @@ NMU2=$(grep "N_MU" Config.sh | awk -F'=' '{print $2}')
 
 if [[ $NTAU1 != $NTAU2 ]];
 then echo 'MuFLR has N_tau =' $NTAU1 ', while gadget-4 has N_tau =' $NTAU2
- echo 'Set the parameters equally and recompile!'
+ echo 'Set the parameters equally and recompile! (Either in MF/AU_cosmofunc.h or Config.sh)'
  rm -r $1
  exit 1
 fi
 
 if [[ $NMU1 != $NMU2 ]];
 then echo 'MuFLR has N_mu =' $NMU1 ', while gadget-4 has N_mu =' $NMU2
- echo 'Set the parameters equally and recompile!'
+ echo 'Set the parameters equally and recompile! (Either in MF/AU_cosmofunc.h or Config.sh)'
  rm -r $1
  exit 1
 fi
@@ -84,7 +84,7 @@ case $RES_HYB in
             ;;
             n) 
                 echo 'Preparing LR'
-                source htools/scripts/build_LR.sh # LR only
+                source htools/scripts/build_LR.sh  # LR only
             ;;
         esac
     ;;
