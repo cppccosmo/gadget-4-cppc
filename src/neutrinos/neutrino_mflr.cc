@@ -33,6 +33,7 @@
 #include "../system/system.h"
 #include "../time_integration/timestep.h"
 
+/* Create tau table from tabulated cumulative function of Fermi-Dirac*/
 double nulinear::tau_t_eV(int t) {
     if (N_tau==0) return 0.0;
     static int init = 0;
@@ -61,6 +62,8 @@ double nulinear::tau_t_eV(int t) {
     }
     return tau_table_eV[t];
 }
+
+/* Create tau table by reading tau_table.txt from MuFLR-HDM, folder MF in our gadget4 */
 double nulinear::tau_t_eV_hdm(int t){
     
     static int init = 0;
@@ -482,7 +485,7 @@ int nulinear::evolve_step(double k, double z0, double z1, double *w) {
 
 /* Generalised SuperEasy p-dep. free-streaming scale  */
 double nulinear::fs_p(int alpha){
-    double mass_eV = Nulinear.m_hdm_eV_parser();
+    double mass_eV = Nulinear.m_nu_eV_parser();
     double tau_eV  = Nulinear.tau_t_eV(alpha);
     double pref    = 100.0 / 299792.0 * pow(1.5,0.5);
     return pref * sqrt(All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * mass_eV / tau_eV ;
@@ -521,10 +524,11 @@ double nulinear::m_nu_eV_parser(void) {
     return m_nu_eV;
 }
 
+/*
 double nulinear::m_hdm_eV_parser(void) {
     return m_hdm_eV;
 }
-
+*/
 int nulinear::N_EQ_parser(void) {
     return N_EQ;
 }

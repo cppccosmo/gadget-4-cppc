@@ -50,7 +50,7 @@ public:
     double OF_eta(int F, double eta);
     double Poisson(double eta, double k, const double *y);
     double m_nu_eV_parser(void);
-    double m_hdm_eV_parser(void);
+    //double m_hdm_eV_parser(void);
     int N_EQ_parser(void);
     int N_nu_tot_parser(void);
     int N_tau_parser(void);
@@ -72,10 +72,10 @@ public:
     int evolve_step(double k, double z0, double z1, double *w);
     double compute_deviation(double k, double z, double *w);
 
-    // SuperEasy linear response functions
+    // Linear response functions
     double fs_p(int alpha);
-    double poisson_mod_fac(double k, double a);
-    double poisson_gen_mod_fac(double k, double a);
+    double poisson_mod_fac(double k, double a); // SuperEasy
+    double poisson_gen_mod_fac(double k, double a); // Gen. SuperEasy
 
     double *y_nu_dynamic;
 
@@ -88,16 +88,20 @@ public:
 #define eta_stop (-log(aeta_in))
     
     const double T_CMB_0_K = 2.726;
-   
-#define m_nu_eV (93.259*(All.OmegaNuLin+All.OmegaNuPart)*All.HubbleParam*All.HubbleParam/All.NumHDM)
-#define m_hdm_eV (All.MassHDM)
+  
+// Legacy  
+//#define m_nu_eV (93.259*(All.OmegaNuLin+All.OmegaNuPart)*All.HubbleParam*All.HubbleParam/All.NumHDM)
+//#define T_NUREL_0_K (0.713765855503608*T_CMB_0_K)
+//#define m_T_nu (m_nu_eV * 11604.51812 / T_NUREL_0_K)
+//#define m_hdm_eV (All.MassHDM)
+
+#define m_nu_eV (All.MassHDM)
 #define Omega_nu_t_0 ((All.OmegaNuLin+All.OmegaNuPart)/N_tau)
-   
+
 #define T_CMB_0_K_4 (T_CMB_0_K*T_CMB_0_K*T_CMB_0_K*T_CMB_0_K)
-#define T_NUREL_0_K (0.713765855503608*T_CMB_0_K)
-#define m_T_nu (m_nu_eV * 11604.51812 / T_NUREL_0_K)
 #define Omega_gam_0 ((4.46911743913795e-07)*T_CMB_0_K_4/(All.HubbleParam*All.HubbleParam))
 #define Omega_nurel_0 (0.227107317660239*(N_nu_eff-All.NumHDM)*Omega_gam_0)
+
 #define Omega_rel_0 (Omega_gam_0+Omega_nurel_0)
 #define Omega_de_0 (1.0-All.Omega0-All.OmegaNuPart-All.OmegaNuLin-Omega_rel_0)
     
