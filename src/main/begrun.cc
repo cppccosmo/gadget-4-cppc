@@ -233,7 +233,7 @@ void sim::begrun1(const char *parameterFile)
 		  Nulinear.tau_t_eV_hdm(0);
 		  mpi_printf("\n---------------------------------------------------------------------\n");
 		  mpi_printf("NEUTRINOS/HDM: Generalised SuperEasy (GSE) linear response\n");
-		  mpi_printf("NEUTRINOS/HDM: Mass      = %.5f eV\n",Nulinear.m_hdm_eV_parser());
+		  mpi_printf("NEUTRINOS/HDM: Mass      = %.5f eV\n",Nulinear.m_nu_eV_parser());
 		  mpi_printf("NEUTRINOS/HDM: N_tau     = %d \n",Nulinear.N_tau_parser());
 		  mpi_printf("NEUTRINOS/HDM: N_mu      = %d \n",Nulinear.N_mu_parser());
 		  mpi_printf("NEUTRINOS/HDM: deg       = \n");
