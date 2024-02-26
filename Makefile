@@ -77,14 +77,14 @@ SRC_DIR = src
 #determine SYSTYPE#
 ###################
 
-SYSTYPE="Katana"
+#SYSTYPE="Katana"
 
-#ifdef SYSTYPE
-#SYSTYPE := "$(SYSTYPE)"
-#-include Makefile.systype
-#else
-#include std-Makefile.systype
-#endif
+ifdef SYSTYPE
+SYSTYPE := "$(SYSTYPE)"
+-include Makefile.systype
+else
+include std-Makefile.systype
+endif
 
 
 
@@ -96,7 +96,7 @@ $(info EXEC: $(EXEC))
 $(info )
 
 
-PYTHON   = python3
+PYTHON   = python
 
 RESULT     := $(shell CONFIG=$(CONFIG) PYTHON=$(PYTHON) BUILD_DIR=$(BUILD_DIR) SRC_DIR=$(SRC_DIR) CURDIR=$(CURDIR) make -f buildsystem/Makefile.config)
 $(info $(RESULT))
@@ -107,6 +107,11 @@ RESULT     := $(shell SRC_DIR=$(SRC_DIR) BUILD_DIR=$(BUILD_DIR) ./buildsystem/gi
 ##########################
 #define available Systems#
 ##########################
+ifeq ($(SYSTYPE),"mypc")
+include buildsystem/Makefile.path.mypc
+include buildsystem/Makefile.comp.gcc
+endif
+
 ifeq ($(SYSTYPE),"Katana")
 #include buildsystem/Makefile.path.katana
 include buildsystem/Makefile.comp.gcc
