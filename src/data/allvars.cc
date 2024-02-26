@@ -212,7 +212,8 @@ void global_data_all_processes::register_parameters(void)
 #endif
 
 #ifdef THERMAL_VEL_IC
-  add_param("stream_vel", &stream_vel, PARAM_DOUBLE, PARAM_FIXED);
+  //add_param("stream_vel", &stream_vel, PARAM_DOUBLE, PARAM_FIXED);
+  add_param("StreamVelListFilename", StreamVelListFilename, PARAM_STRING, PARAM_CHANGEABLE);
 #endif
 
 //#ifdef CREATE_GRID
@@ -271,6 +272,52 @@ void global_data_all_processes::read_outputlist(char *fname)
   /* tell all other processes */
   MPI_Bcast(get_data_ptr(), get_data_size(), MPI_BYTE, 0, Communicator);
 }
+
+#ifdef THERMAl_VEL_IC
+void global_data_all_processes::read_vellist(char *fname)
+{
+  if(ThisTask == 0)
+    {
+      FILE *fd;
+
+      if(!(fd = fopen(fname, "r")))
+        {
+          Terminate("can't read velocity list in file '%s'\n", fname);
+        }
+
+      VelListLength = 0;
+
+      while(1)
+        {
+          char buf[512];
+          if(fgets(buf, 500, fd) != buf)
+            break;
+
+          int flag;
+          int count = sscanf(buf, " %lg %d ", &VelListVels[VelListLength], &flag);
+
+          if(count == 1)
+            flag = 1;
+
+          if(count == 1 || count == 2)
+            {
+              if(VelListLength >= MAXLEN_OUTPUTLIST)
+                Terminate("\ntoo many entries in velocity-list. You should increase MAXLEN_OUTPUTLIST=%d.\n", MAXLEN_OUTPUTLIST);
+
+              VelListFlag[VelListLength] = flag;
+              VelListLength++;
+            }
+        }
+
+      fclose(fd);
+
+      mpi_printf("\nfound %d velocities in velocity-list.\n", VelListLength);
+    }
+
+  /* tell all other processes */
+  MPI_Bcast(get_data_ptr(), get_data_size(), MPI_BYTE, 0, Communicator);
+}
+#endif
 
 void global_data_all_processes::some_parameter_checks(void)
 {

@@ -366,7 +366,13 @@ struct global_data_all_processes : public parameters
 #endif
 
 #ifdef THERMAL_VEL_IC
-  double stream_vel;
+  //double stream_vel;
+  char OutputListFilename[MAXLEN_PATH];
+  void read_vellist(char *fname);
+    /** table with thermal velocities */
+  double VelListVels[MAXLEN_OUTPUTLIST]; // Sets maximum number of discrete velocities to 1100, why not reuse int?
+  char VelListFlag[MAXLEN_OUTPUTLIST];
+  int VelListLength; /**< number of times stored in table of desired output times */
 #endif
 
   void set_cosmo_factors_for_current_time(void);

@@ -282,6 +282,10 @@ void sim::begrun1(const char *parameterFile)
   else
     All.OutputListLength = 0;
 
+#ifdef THERMAL_VEL_IC
+  All.read_vellist(All.StreamVelListFilename);
+#endif
+
   All.write_used_parameters(All.OutputDir, "parameters-usedvalues");
 
   All.some_parameter_checks();

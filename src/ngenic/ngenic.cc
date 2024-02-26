@@ -228,15 +228,19 @@ void ngenic::ngenic_displace_particles(void)
   mpi_printf("NGENIC: generating random thermal velocity for IC\n");
 
   int vel_vec_size = Sp->NumPart - Sp->NumICPart;
-  thermal_vel_vec = (double *)Mem.mymalloc_clear("thermal_vel_vec", vel_vec_size * 3 * sizeof(thermal_vel_vec)); 
+  thermal_vel_vec = (double *)Mem.mymalloc_clear("thermal_vel_vec", vel_vec_size * 3 * sizeof(thermal_vel_vec));  //MAKE CHANGE HERE
 
-  double stream_vel_phys = All.stream_vel / All.cf_atime; // the physical velocity is defined as the tau_i / (a * m_nu), the input stream_vel is only tau_i / m_nu 
+  //double stream_vel_phys = All.stream_vel / All.cf_atime; // the physical velocity is defined as the tau_i / (a * m_nu), the input stream_vel is only tau_i / m_nu 
   
-  mpi_printf("NGENIC: thermal velocity of the stream at a = %g is %g km / s\n", All.cf_atime, stream_vel_phys);
+  //mpi_printf("NGENIC: thermal velocity of the stream at a = %g is %g km / s\n", All.cf_atime, stream_vel_phys);
 
   // populate the vector with randomly drawn 3D velocities
   for(int i = 0; i<vel_vec_size; i++)
     {
+      int stream_vel_index = (int)gsl_ran_flat(rnd_generator,0,All.VelListLength);
+      double stream_vel = VelListVels[stream_vel_index];
+      double stream_vel_phys = stream_vel / All.cf_atime;
+
       double rand_x = gsl_ran_gaussian(rnd_generator, 1.);
       double rand_y = gsl_ran_gaussian(rnd_generator, 1.);
       double rand_z = gsl_ran_gaussian(rnd_generator, 1.);

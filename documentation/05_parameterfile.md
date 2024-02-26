@@ -430,8 +430,8 @@ This is a binary .dat file that contains the full 3-D density grid of the snapsh
 
 -------
 
-**stream_vel** 0
-The comoving Lagrangian velocity of the neutrino particles to be converted. Given in units of km/s. stream_vel = tau / m. IC module will convert it to physical velocity, then into Gadget internal units later.
+**StreamVelListFilename** 
+Path to file containing the comoving Lagrangian velocity of the neutrino particles to be converted. Given in units of km/s. stream_vel = tau / m. IC module will convert it to physical velocity, then into Gadget internal units later.
 
 -------
 
