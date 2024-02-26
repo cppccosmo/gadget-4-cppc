@@ -367,7 +367,7 @@ struct global_data_all_processes : public parameters
 
 #ifdef THERMAL_VEL_IC
   //double stream_vel;
-  char OutputListFilename[MAXLEN_PATH];
+  char StreamVelListFilename[MAXLEN_PATH];
   void read_vellist(char *fname);
     /** table with thermal velocities */
   double VelListVels[MAXLEN_OUTPUTLIST]; // Sets maximum number of discrete velocities to 1100, why not reuse int?

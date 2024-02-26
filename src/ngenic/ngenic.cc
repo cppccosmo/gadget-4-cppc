@@ -238,7 +238,7 @@ void ngenic::ngenic_displace_particles(void)
   for(int i = 0; i<vel_vec_size; i++)
     {
       int stream_vel_index = (int)gsl_ran_flat(rnd_generator,0,All.VelListLength);
-      double stream_vel = VelListVels[stream_vel_index];
+      double stream_vel = All.VelListVels[stream_vel_index];
       double stream_vel_phys = stream_vel / All.cf_atime;
 
       double rand_x = gsl_ran_gaussian(rnd_generator, 1.);

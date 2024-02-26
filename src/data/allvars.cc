@@ -212,7 +212,6 @@ void global_data_all_processes::register_parameters(void)
 #endif
 
 #ifdef THERMAL_VEL_IC
-  //add_param("stream_vel", &stream_vel, PARAM_DOUBLE, PARAM_FIXED);
   add_param("StreamVelListFilename", StreamVelListFilename, PARAM_STRING, PARAM_CHANGEABLE);
 #endif
 
@@ -273,7 +272,7 @@ void global_data_all_processes::read_outputlist(char *fname)
   MPI_Bcast(get_data_ptr(), get_data_size(), MPI_BYTE, 0, Communicator);
 }
 
-#ifdef THERMAl_VEL_IC
+#ifdef THERMAL_VEL_IC
 void global_data_all_processes::read_vellist(char *fname)
 {
   if(ThisTask == 0)
