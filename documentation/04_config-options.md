@@ -1257,25 +1257,25 @@ directions) or of spatially variable resolution.
 
 **ADDITIONAL_GRID**
 
-blah
+If this is activated, an additional set of particles are created on a cartesian grid, with the particle type number incremented by 1.
 
 -------
 
 **THERMAL_VEL_IC**
 
-blah
+If this is activated, the particles are given a thermal velocity in a random direction, with an amplitude given through the stream_vel parameter.
 
 -------
 
 **CB_PHASE**
 
-blah 
+If this is activated, the code will read in a file giving the phase of the cold matter particles. This allows the neutrino initial conditions to be generated in phase with the CDM, rather than from a random seed.
 
 -------
 
 **CB_VELDIV**
 
-blah
+If this is activated, the code will compute the velocity divergence of the matter particles and output its power spectrum.
 
 -------
 
