@@ -383,14 +383,17 @@ possible, and intermediate forms in principle as well.
 -------
 
 **CBPowerSpectrumFile**
+Input CB power spectrum corresponding to the snapshot used in the restart run. This is only needed if CB_PHASE option is chosen.
 
 -------
 
 **GrowthRateFile** 
+Input growth rate f = delta / theta. This is the corresponding growth rate to the input PowerSpectrumFile.
 
 -------
 
-**NLR**
+**NLR** 0
+A switch used to select neutrino linear response methods. 0 = no neutrinos, 1 = supereasy, 2 = multi-fluid.
 
 -------
 
@@ -398,11 +401,13 @@ possible, and intermediate forms in principle as well.
 
 -------
 
-**MassHDM**
+**MassHDM** 0
+The mass of the hot dark matter particle in eV.
 
 -------
 
-**N_tau_part**
+**N_tau_part** 0
+The number of neutrino streams that will be treated with particles in the simulation. Note, this includes the stream that is being converted in that particular run.
 
 -------
 
@@ -418,23 +423,29 @@ possible, and intermediate forms in principle as well.
 
 -------
 
-**OmegaNuLin**
+**OmegaNuLin** 0
+The energy density of neutrinos that are tracked by linear response method chosen by NLR parameter. This parameter alongside OmegaNuPart should add up to the total massive neutrino density in the cosmology.
+>>>>>>> multiple-vels
 
 -------
 
-**OmegaNuPart**
+**OmegaNuPart** 0
+The energy density of neutrinos that are tracked as N-body particles. This parameter is essentially used to determine the neutrino particle mass.
 
 -------
 
 **deltagridFILE**
+This is a binary .dat file that contains the full 3-D density grid of the snapshot used in the restart run. This allows the neutrino initial conditions to be generated in phase with the CDM, rather than from a random seed.
 
 -------
 
-**stream_vel**
+**StreamVelListFilename** 
+Path to file containing the comoving Lagrangian velocity of the neutrino particles to be converted. Given in units of km/s. stream_vel = tau / m. IC module will convert it to physical velocity, then into Gadget internal units later.
 
 -------
 
 **ynuFile**
+This is a binary .dat file that contains the full Multi-Fluid perturbation data. This is used in any restarted mflr runs, to ensure the linear response neutrinos retain their nonlinear info from the previous run. The MFLR module will not reinitialise in a restarted run, and rely on the info in this file instead.
 
 -------
  

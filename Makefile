@@ -95,7 +95,7 @@ $(info EXEC: $(EXEC))
 $(info )
 
 
-PYTHON   = python3
+PYTHON   = python
 
 RESULT     := $(shell CONFIG=$(CONFIG) PYTHON=$(PYTHON) BUILD_DIR=$(BUILD_DIR) SRC_DIR=$(SRC_DIR) CURDIR=$(CURDIR) make -f buildsystem/Makefile.config)
 $(info $(RESULT))
@@ -106,6 +106,11 @@ RESULT     := $(shell SRC_DIR=$(SRC_DIR) BUILD_DIR=$(BUILD_DIR) ./buildsystem/gi
 ##########################
 #define available Systems#
 ##########################
+ifeq ($(SYSTYPE),"mypc")
+include buildsystem/Makefile.path.mypc
+include buildsystem/Makefile.comp.gcc
+endif
+
 ifeq ($(SYSTYPE),"HPC")
 include buildsystem/Makefile.comp.gcc
 endif
