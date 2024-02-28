@@ -171,6 +171,7 @@ DOUBLEPRECISION=1                             # if activated and set to 1, use d
 #NGENIC_2LPT                                  # applies 2LPT instead of just Zeldovich approximation
 #CREATE_GRID                                  # start with a regular Cartesian DM particle grid, instead of reading a glass file (for NGENIC)
 #ADDITIONAL_GRID			                  # adds additional particles to the IC read by a restart run, used in hybrid neutrino simulations
+#CREATE_HDM_GRID
 #THERMAL_VEL_IC				                  # adds a random thermal velocity to IC particles
 #CB_PHASE				                      # use the phase from the restart snapshot to initialise the density field instead of the random seed
 #MFLR_RST				                      # read in multifluid perturbations from file rather than initialise from linear theory

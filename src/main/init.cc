@@ -556,10 +556,11 @@ void sim::check_omega(void)
 
   double omega = masstot * (LONG_Z * LONG_Y * LONG_Z) / (All.BoxSize * All.BoxSize * All.BoxSize) /
                  (3 * All.Hubble * All.Hubble / (8 * M_PI * All.G));
-#ifndef ADDITIONAL_GRID
-  if(fabs(omega - All.Omega0) > 1.0e-2)
-#else
+
+#if defined(ADDITIONAL_GRID) || defined(CREATE_HDM_GRID)
   if(fabs(omega - All.Omega0 - All.OmegaNuPart) > 1.0e-2)
+#else
+  if(fabs(omega - All.Omega0) > 1.0e-2)
 #endif
     {
       mpi_printf(

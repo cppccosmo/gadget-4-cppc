@@ -170,7 +170,11 @@ void sim::begrun1(const char *parameterFile)
     }
 
   /* This is initialised here because it will never be freed, so its best to have it in the deepest part of the stack */
-//#ifdef ADDITIONAL_GRID
+/*
+#ifdef CREATE_HDM_GRID
+  mpi_printf("New Hybrid run selected! Converting %d streams",All.N_hdm_types); 
+#endif
+*/
   switch (All.NLR){
 	  case 0:
             {
@@ -192,8 +196,10 @@ void sim::begrun1(const char *parameterFile)
 	    }
 	  case 2:
 	    {
-		  Nulinear.tau_t_eV(0);
+		  //Nulinear.tau_t_eV(0); // This is in the built in case of FD neutrinos
+		  Nulinear.tau_t_eV_hdm(0); // Needs to tread psd file and compute tau
 
+                  /* This is initialised here because it will never be freed, so its best to have it in the deepest part of the stack */
 		  int local_y_nu_size = 0, local_n_k = 0;
 		  if(PMGRID % NTask == 0) {
 		      local_n_k = PMGRID / NTask;
@@ -233,7 +239,7 @@ void sim::begrun1(const char *parameterFile)
 		  Nulinear.tau_t_eV_hdm(0);
 		  mpi_printf("\n---------------------------------------------------------------------\n");
 		  mpi_printf("NEUTRINOS/HDM: Generalised SuperEasy (GSE) linear response\n");
-		  mpi_printf("NEUTRINOS/HDM: Mass      = %.5f eV\n",Nulinear.m_hdm_eV_parser());
+		  mpi_printf("NEUTRINOS/HDM: Mass      = %.5f eV\n",Nulinear.m_nu_eV_parser());
 		  mpi_printf("NEUTRINOS/HDM: N_tau     = %d \n",Nulinear.N_tau_parser());
 		  mpi_printf("NEUTRINOS/HDM: N_mu      = %d \n",Nulinear.N_mu_parser());
 		  mpi_printf("NEUTRINOS/HDM: deg       = \n");
@@ -245,9 +251,7 @@ void sim::begrun1(const char *parameterFile)
 		  mpi_printf("---------------------------------------------------------------------\n");
 		  break;
 	    }
-  } // Switch ends 
-
-//#endif
+  }
   
   /*
   if(All.NLR == 2) {

@@ -45,7 +45,7 @@ class ngenic : public pm_mpi_fft
   void ngenic_displace_additional_particles(void); /* essentially the same function as ngenic_displace_particles, but for the additional particles added to the simulation */
 
   void create_grid(void);
-
+  void create_hdm_grid(void); /* New hybrid method to create an hdm grid at IC */
   void additional_grid(void); /* function to initialise a grid when additional particles are to be inserted to a read IC */
 
  private:

@@ -1,10 +1,9 @@
 #!/bin/bash
 
-OPT=$1                           # 'start'           (LR/GLR/MF/HYB)
-                                 # 'restart'         (MF/HYB)
-                                 # 'postprocess'     (LR/GLR/MF/HYB)
+OPT=$1                           # 'start'           
+				 # 'restart'         (Hybris sims)
+                                 # 'postprocess'   
 
-#TYPE=1                           # 1: SELR, 2: MFLR, 3: GLR, 4: HYB
 SIMFOLDER='output'               # Output of simulation to consider 
 
 # Class ------------------------------------------------------------------------------------
@@ -14,7 +13,7 @@ CLASS_RES=0                      # Class precision 0: Low, 1: High
 
 # Multifluid -------------------------------------------------------------------------------
 
-OUTPUT_Z="99 19 9 5 0"           # Output redshifts for the MultiFluid run
+OUTPUT_Z="99 0"                  # Output redshifts for the MultiFluid run
 OUTPUT_NL=0
 OUTPUT_PRINT=2
 
@@ -24,16 +23,21 @@ NPARTS=512                       # Number of CDM particles
 ZIN=99.0                         # Initial redshift in gadget
 BOXSIZE=512.0                    # BoxSize for gadget in Mpc/h
 OUTPUT_G="49 19 9 5 3 2 1 0"     # Gadget snapshot output redshifts 
-LIN_HDM=1                        # NLR for linear neutrinos/hdm
+LR_HDM=2                         # Linear response type: 1 SE, 2 MF, 3 GSE
+
+# Hybrid restart --------------------------------------------------------------------------
+
+BASE=output
+SNAP=2                           # Snapshot taken as IC
+NSTREAMS=2			 # Number pof streams converted as particles
+ISTREAM=1                        # First of the NSTREAMS to be converted, first overall is 1
 
 # Post -------------------------------------------------------------------------------------
 
-SNAP_BASE=snapshot               # Name of snapshot base 
-SNAP=7                           # Snapshot number, format %03d
-PTYPE=1                          # Particle type to analyse
-          
+#SNAP_BASE=snapshot               # Name of snapshot base 
+#SNAP=7                           # Snapshot number, format %03d
+#PTYPE=1                          # Particle type to analyse         
 # TO FINISH
-
 #iStream=0                       # First stream to covert                      
 #Streams=10                      # Streams to convert                  
 #pindex=0                        # 0: Projection plot 
@@ -118,7 +122,7 @@ case $OPT in
     AIN=$(echo $ZIN | awk '{print 1/(1+$1)}')
 
     sed -e s/TEMPLATE_P_ZIN/${AIN}/ \
-        -e s/TEMPLATE_P_OM/${COSMO_OMM}/ \
+        -e s/TEMPLATE_P_OM${COSMO_OMM}/ \
         -e s/TEMPLATE_P_OL/${COSMO_OL}/ \
         -e s/TEMPLATE_P_OB/${COSMO_OB}/ \
         -e s/TEMPLATE_P_OH/${COSMO_OH}/ \
@@ -137,19 +141,35 @@ case $OPT in
     ;;
     
     restart) 
-    echo 'Restart Hybrid simulation in folder' $SimFolder
 
-    #NuDelta=$SimFolder/neutrino_stream_data/neutrino_delta_stream_$aRes.csv
-    #NuTheta=$SimFolder/neutrino_stream_data/neutrino_theta_stream_$aRes.csv
-    #PowerSpectrum=$SimFolder/powerspecs/powerspec_00$snap_number.txt
+    # Script to restart a hybrid simulation 
+    # Pre-processing and preparation of the param file included 
+
+    echo 'Restart Hybrid simulation in folder' $SIMFOLDER
+    ROOT=$SIMFOLDER/
     
-    #python3 scripts/pre_restart.py -sf $SimFolder -pk $PkOut -gr $GFOut -cb $CBOut -id $NuDelta -it $NuTheta -icb $PowerSpectrum -str $Stream -Ns $NumStreams
+    # Call main python script 
+    #python3 scripts/prepare_hr.py $ROOT
     
+    NEWT=$(h5dump -a Header/Time $ICSNAP | grep "(0)" | awk '{print $2}')    
+    echo $NEWT
+
     #c=299792458
     #tau=$(sed -n '1p' $SimFolder/$MfOut.txt | awk '{print $4}')
     #Stream_Vel=$(echo "$tau/$mass*$c/1000 " | bc -l)
     #echo 'Set stream velocity in the param.txt file as '$Stream_Vel '(km/s)'
     
+
+    # Avoid overwriting 
+    rm -f param_restart.txt
+    touch param_restart.txt
+    sed -e s/TEMPLATE_P_ZIN/${NEWT}/ \
+        -e s/TEMPLATE_P_OHP/${COSMO_OHP}/ \
+        -e s/TEMPLATE_P_OHLR/${COSMO_OHLR}/ \
+        -e s/TEMPLATE_POWERSPECTRUM/${PK_FILE}/ \
+        -e s/TEMPLATE_GROWTHRATE/${THK_FILE}/ param_restart_template.txt > param_restart.txt
+    
+    echo 'Param.txt file is ready, check to be sure!!'
     ;;
 
     postprocess)

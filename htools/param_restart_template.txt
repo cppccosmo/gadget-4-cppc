@@ -1,0 +1,122 @@
+
+%----  Relevant files 
+InitCondFile         output/snapshot_001
+OutputDir            ./output_c1
+SnapshotFileBase     snapshot
+OutputListFilename   outputs.txt
+
+
+%---- File formats
+ICFormat             3
+SnapFormat           3 
+
+%---- CPU-time limits
+TimeLimitCPU              8640000   % 24h, in seconds
+CpuTimeBetRestartFile     82800    % 2h,  in seconds
+
+%----- Memory alloction
+MaxMemSize                1900    % in MByte
+
+%---- Caracteristics of run
+TimeBegin                 0.0103663 
+TimeMax	                  1.0     
+
+%---- Basic code options that set the type of simulation
+ComovingIntegrationOn     1 
+
+%---- Cosmological parameters
+Omega0                    0.2627
+OmegaLambda               0.7352
+OmegaBaryon               0.044792699861138666
+OmegaNuPart               0.00010649      
+OmegaNuLin                0.002023380      
+HubbleParam               0.71
+Hubble                    100.0
+BoxSize                   512.0
+NumHDM                    3.044
+MassHDM                   0.15
+NLR                       2
+
+%---- Output frequency and output paramaters
+OutputListOn              1 
+TimeBetSnapshot           0.0
+TimeOfFirstSnapshot       0.0
+TimeBetStatistics         0.01
+NumFilesPerSnapshot       1
+MaxFilesWithConcurrentIO  1 
+
+%---- Accuracy of time integration
+ErrTolIntAccuracy        0.01 
+CourantFac               0.3
+MaxSizeTimestep          0.05
+MinSizeTimestep          0.0 
+
+%---- Tree algorithm, force accuracy, domain update frequency
+TypeOfOpeningCriterion                1
+ErrTolTheta                           0.75
+ErrTolThetaMax                        1.0
+ErrTolForceAcc                        0.002
+TopNodeFactor                         3.0
+
+ActivePartFracForNewDomainDecomp      0.01
+%ActivePartFracForPMinsteadOfEwald     0.05
+
+%---- Initial density estimate
+DesNumNgb                        64
+MaxNumNgbDeviation               1 
+
+%---- System of units
+UnitLength_in_cm         3.085678e24        ;  Mpc / h
+UnitMass_in_g            1.989e43           ;  1.0e10 Msun / h
+UnitVelocity_in_cm_per_s 1e5                ;  1 km/sec
+GravityConstantInternal  0
+
+
+%---- Gravitational softening length
+SofteningComovingClass0      0.0           ; 10 kpc/h
+SofteningMaxPhysClass0       0.0
+SofteningComovingClass1      0.02
+SofteningMaxPhysClass1       0.02
+SofteningComovingClass2      0.02
+SofteningMaxPhysClass2       0.02
+SofteningComovingClass3      0.02
+SofteningMaxPhysClass3       0.02
+SofteningComovingClass4      0.02
+SofteningMaxPhysClass4       0.02
+SofteningComovingClass5      0.02
+SofteningMaxPhysClass5       0.02
+
+SofteningClassOfPartType0    1
+SofteningClassOfPartType1    1
+SofteningClassOfPartType2    2
+SofteningClassOfPartType3    3
+SofteningClassOfPartType4    4
+SofteningClassOfPartType5    5
+
+%----- SPH
+ArtBulkViscConst             1.0
+MinEgySpec                   0
+InitGasTemp                  0
+
+
+%----- N-GenIC
+NSample                                           512
+GridSize                                          512
+Seed                                              2827492
+SphereMode                                        1
+PowerSpectrumType                                 2
+ReNormalizeInputSpectrum                          0
+PrimordialIndex                                   1.0               
+ShapeGamma                                        0.21
+Sigma8                                            0.8
+CBPowerSpectrumFile				  CBFile_c001.txt
+PowerSpectrumFile                                 PSFile_c001.txt
+GrowthRateFile                                    GRFile_c001.txt
+InputSpectrum_UnitLength_in_cm                    3.085678e24
+stream_vel					  124.202       % km / s comoving velocity for the stream you are converting 
+N_tau_part					  1             %including the one you are converting now.
+Nu_part_deg					  1             %how many multifluid streams does each N_tau_part represent
+
+%------ conversion package
+ynuFile						  output/y_nu/y_nu_0.010.dat
+deltagridFILE					  output/delta_grid/delta_grid_0.010.dat

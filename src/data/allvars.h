@@ -154,6 +154,13 @@ struct global_data_all_processes : public parameters
   int Nu_part_deg; 
 #endif
 
+ /*
+#ifdef CREATE_HDM_GRID
+  int N_hdm_types;
+  int hdm_part_deg; 
+#endif
+*/
+
   /* Code options */
 
   int ComovingIntegrationOn;  /**< flags that comoving integration is enabled */
@@ -361,7 +368,7 @@ struct global_data_all_processes : public parameters
   char CBPowerSpectrumFile[MAXLEN_PATH];
 #endif
 //#ifdef CREATE_GRID
-#if defined (CREATE_GRID) || defined (ADDITIONAL_GRID)
+#if defined (CREATE_GRID) || defined (ADDITIONAL_GRID) || defined (CREATE_HDM_GRID)
   int GridSize;
 #endif
 

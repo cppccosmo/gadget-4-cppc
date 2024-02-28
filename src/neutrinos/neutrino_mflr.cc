@@ -217,9 +217,15 @@ double nulinear::Poisson(double eta, double k, const double *y) {
 // out the follow section of the code until the comment-line 'end-of-block'.
 
     int t_min = 0;
+
 #ifdef ADDITIONAL_GRID
-    t_min = All.N_tau_part * All.Nu_part_deg;
+    t_min = All.N_tau_part * All.Nu_part_deg; // Legacy Hybrid
 #endif
+/*
+#ifdef CREATE_HDM_GRID
+    t_min = All.N_hdm_types * All.hdm_part_deg; // New Hybrid, generalised to HDM and at initial time
+#endif
+*/
     for(int t=t_min; t<N_tau; t++) sum_Od += Nulinear.OF_eta(t,eta) * y[2*t*N_mu];
 
 // end-of-block
@@ -260,6 +266,11 @@ double nulinear::d_nu_mono(double z, const double *y) {
 #ifdef ADDITIONAL_GRID
     t_min = All.N_tau_part * All.Nu_part_deg;
 #endif
+/*
+#ifdef CREATE_HDM_GRID
+    t_min = All.N_hdm_types * All.hdm_part_deg; 
+#endif
+*/
     for(int t=t_min; t<N_tau; t++){
       double E_m = 1.0;
       d_mono += y[2*t*N_mu] * E_m;

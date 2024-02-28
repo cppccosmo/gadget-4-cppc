@@ -1261,6 +1261,12 @@ blah
 
 -------
 
+**CREATE_HDM_GRID**
+
+blah
+
+-------
+
 **THERMAL_VEL_IC**
 
 blah

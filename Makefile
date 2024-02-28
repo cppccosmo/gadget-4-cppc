@@ -107,107 +107,107 @@ RESULT     := $(shell SRC_DIR=$(SRC_DIR) BUILD_DIR=$(BUILD_DIR) ./buildsystem/gi
 ##########################
 #define available Systems#
 ##########################
-ifeq ($(SYSTYPE),"Katana")
+#ifeq ($(SYSTYPE),"Katana")
 #include buildsystem/Makefile.path.katana
 include buildsystem/Makefile.comp.gcc
-endif
+#endif
 
-ifeq ($(SYSTYPE),"Generic-gcc")
-include buildsystem/Makefile.gen.libs
-include buildsystem/Makefile.comp.gcc
-endif
-ifeq ($(SYSTYPE),"Generic-intel")
-include buildsystem/Makefile.comp.gcc-paranoia
-include buildsystem/Makefile.gen.libs
-endif
-
-ifeq ($(SYSTYPE),"SuperMUC-NG")
-include buildsystem/Makefile.comp.supermuc-ng
-include buildsystem/Makefile.path.supermuc-ng
-endif
-
-ifeq ($(SYSTYPE),"SuperMUC-NG-OpenMPI")
-include buildsystem/Makefile.comp.supermuc-ng-openmpi
-include buildsystem/Makefile.path.supermuc-ng
-endif
-
-ifeq ($(SYSTYPE),"SuperMUC-NG-GCC")
-include buildsystem/Makefile.comp.supermuc-ng-gcc
-include buildsystem/Makefile.path.supermuc-ng-gcc
-endif
-
-ifeq ($(SYSTYPE), "Generic-gcc-single")
-include buildsystem/Makefile.comp.gcc
-include buildsystem/Makefile.gen.libs
-endif
-
-ifeq ($(SYSTYPE), "Generic-intel-single")
-include buildsystem/Makefile.comp.gcc-paranoia
-include buildsystem/Makefile.gen.libs
-endif
-
-ifeq ($(SYSTYPE),"Darwin")
-include buildsystem/Makefile.comp.gcc
-include buildsystem/Makefile.path.macports
-endif
-
-ifeq ($(SYSTYPE),"Magny")
-include buildsystem/Makefile.comp.gcc
-include buildsystem/Makefile.path.magny
-endif
-
-ifeq ($(SYSTYPE),"Freya")
-include buildsystem/Makefile.comp.freya
-include buildsystem/Makefile.path.freya
-endif
-
-#module load  gcc/7.2    gsl/2.2  hdf5-serial/gcc/1.8.18   fftw/gcc/3.3.6   
-ifeq ($(SYSTYPE),"FreyaOpenMPI")
-include buildsystem/Makefile.comp.freyaopenmpi
-include buildsystem/Makefile.path.freya
-endif
-
-
-ifeq ($(SYSTYPE),"Cobra")
-include buildsystem/Makefile.comp.cobra
-include buildsystem/Makefile.path.cobra
-endif
-
-ifeq ($(SYSTYPE),"RavenOpenMPI")
-include buildsystem/Makefile.comp.ravenopenmpi
-include buildsystem/Makefile.path.cobra
-endif
-
-ifeq ($(SYSTYPE),"CobraOpenMPI")
-include buildsystem/Makefile.comp.cobraopenmpi
-include buildsystem/Makefile.path.cobra
-endif
-
-ifeq ($(SYSTYPE),"Haswell")
-include buildsystem/Makefile.comp.gcc
-include buildsystem/Makefile.path.haswell
-endif
-
-ifeq ($(SYSTYPE),"gcc-paranoia")
-include buildsystem/Makefile.comp.gcc-paranoia
-include buildsystem/Makefile.path.mpa_desktop
-endif
-
-
-ifeq ($(SYSTYPE),"libs")
-include buildsystem/makefile.comp.gcc
-include buildsystem/Makefile.path.libs
-endif
-
-ifeq ($(SYSTYPE),"hydra")
-include buildsystem/Makefile.comp.gcc
-include buildsystem/Makefile.path.hydra
-endif
-
-ifeq ($(SYSTYPE),"bwforcluster")
-include buildsystem/Makefile.comp.gcc
-include buildsystem/Makefile.path.bwforcluster
-endif
+#ifeq ($(SYSTYPE),"Generic-gcc")
+#include buildsystem/Makefile.gen.libs
+#include buildsystem/Makefile.comp.gcc
+#endif
+#ifeq ($(SYSTYPE),"Generic-intel")
+#include buildsystem/Makefile.comp.gcc-paranoia
+#include buildsystem/Makefile.gen.libs
+#endif
+#
+#ifeq ($(SYSTYPE),"SuperMUC-NG")
+#include buildsystem/Makefile.comp.supermuc-ng
+#include buildsystem/Makefile.path.supermuc-ng
+#endif
+#
+#ifeq ($(SYSTYPE),"SuperMUC-NG-OpenMPI")
+#include buildsystem/Makefile.comp.supermuc-ng-openmpi
+#include buildsystem/Makefile.path.supermuc-ng
+#endif
+#
+#ifeq ($(SYSTYPE),"SuperMUC-NG-GCC")
+#include buildsystem/Makefile.comp.supermuc-ng-gcc
+#include buildsystem/Makefile.path.supermuc-ng-gcc
+#endif
+#
+#ifeq ($(SYSTYPE), "Generic-gcc-single")
+#include buildsystem/Makefile.comp.gcc
+#include buildsystem/Makefile.gen.libs
+#endif
+#
+#ifeq ($(SYSTYPE), "Generic-intel-single")
+#include buildsystem/Makefile.comp.gcc-paranoia
+#include buildsystem/Makefile.gen.libs
+#endif
+#
+#ifeq ($(SYSTYPE),"Darwin")
+#include buildsystem/Makefile.comp.gcc
+#include buildsystem/Makefile.path.macports
+#endif
+#
+#ifeq ($(SYSTYPE),"Magny")
+#include buildsystem/Makefile.comp.gcc
+#include buildsystem/Makefile.path.magny
+#endif
+#
+#ifeq ($(SYSTYPE),"Freya")
+#include buildsystem/Makefile.comp.freya
+#include buildsystem/Makefile.path.freya
+#endif
+#
+##module load  gcc/7.2    gsl/2.2  hdf5-serial/gcc/1.8.18   fftw/gcc/3.3.6   
+#ifeq ($(SYSTYPE),"FreyaOpenMPI")
+#include buildsystem/Makefile.comp.freyaopenmpi
+#include buildsystem/Makefile.path.freya
+#endif
+#
+#
+#ifeq ($(SYSTYPE),"Cobra")
+#include buildsystem/Makefile.comp.cobra
+#include buildsystem/Makefile.path.cobra
+#endif
+#
+#ifeq ($(SYSTYPE),"RavenOpenMPI")
+#include buildsystem/Makefile.comp.ravenopenmpi
+#include buildsystem/Makefile.path.cobra
+#endif
+#
+#ifeq ($(SYSTYPE),"CobraOpenMPI")
+#include buildsystem/Makefile.comp.cobraopenmpi
+#include buildsystem/Makefile.path.cobra
+#endif
+#
+#ifeq ($(SYSTYPE),"Haswell")
+#include buildsystem/Makefile.comp.gcc
+#include buildsystem/Makefile.path.haswell
+#endif
+#
+#ifeq ($(SYSTYPE),"gcc-paranoia")
+#include buildsystem/Makefile.comp.gcc-paranoia
+#include buildsystem/Makefile.path.mpa_desktop
+#endif
+#
+#
+#ifeq ($(SYSTYPE),"libs")
+#include buildsystem/makefile.comp.gcc
+#include buildsystem/Makefile.path.libs
+#endif
+#
+#ifeq ($(SYSTYPE),"hydra")
+#include buildsystem/Makefile.comp.gcc
+#include buildsystem/Makefile.path.hydra
+#endif
+#
+#ifeq ($(SYSTYPE),"bwforcluster")
+#include buildsystem/Makefile.comp.gcc
+#include buildsystem/Makefile.path.bwforcluster
+#endif
 
 
 ifndef LINKER

@@ -304,6 +304,10 @@ int main(int argc, char **argv)
 
           Snap.read_ic(fname);
 
+#ifdef CREATE_HDM_GRID
+	//Sim.Ngenic.create_hdm_grid();
+#endif
+
 #ifdef ADDITIONAL_GRID
           Sim.Ngenic.additional_grid();
 #endif

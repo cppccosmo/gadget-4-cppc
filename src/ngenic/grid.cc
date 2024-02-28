@@ -11,8 +11,7 @@
 
 #include "gadgetconfig.h"
 
-//#ifdef CREATE_GRID
-#if defined (CREATE_GRID) || defined (ADDITIONAL_GRID)
+#if defined (CREATE_GRID) || defined (ADDITIONAL_GRID) || defined (CREATE_HDM_GRID)
 
 #include <gsl/gsl_rng.h>
 #include <math.h>
@@ -227,4 +226,51 @@ void ngenic::additional_grid(void)
     }
 }
 #endif
+
+#ifdef CREATE_HDM_GRID
+void ngenic::create_hdm_grid(void)
+{
+  mpi_printf("NGENIC: create hdm grid called\n");
+  
+  long long gridSize    = All.GridSize;
+  long long partTotal   = gridSize * gridSize * gridSize;
+  long long partPerTask = partTotal / NTask;
+
+  Sp->RegionLen     = All.BoxSize;
+  Sp->FacCoordToInt = pow(2.0, BITS_FOR_POSITIONS) / Sp->RegionLen;
+  Sp->FacIntToCoord = Sp->RegionLen / pow(2.0, BITS_FOR_POSITIONS);
+
+  All.Time = All.TimeBegin;
+
+  //double masstot = (All.OmegaNuPart / All.N_tau_part) * 3 * All.Hubble * All.Hubble / (8 * M_PI * All.G) * All.BoxSize * All.BoxSize * All.BoxSize;
+  //double m = masstot / (partTotal);
+
+  /* Set the mass array to zero to let gagdet write particle masses */
+  for (int ii=0;ii<All.N_hdm_types;ii++) 
+	  All.MassTable[ii+2] = 0.;
+
+  Sp->NumICPart = Sp->NumPart;
+
+  Sp->NumGas   = 0;
+
+  mpi_printf("MaxPart from IC = %d\n", Sp->MaxPart);
+
+  int NewPart = 0;
+
+  if(ThisTask != NTask - 1)
+    {
+
+
+
+
+
+
+
+
+
+}
+#endif
+
+
+
 #endif

@@ -410,6 +410,14 @@ possible, and intermediate forms in principle as well.
 
 -------
 
+**N_hdm_types**
+
+-------
+
+**hdm_part_deg**
+
+-------
+
 **OmegaNuLin**
 
 -------

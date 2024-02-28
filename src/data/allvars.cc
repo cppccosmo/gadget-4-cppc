@@ -205,7 +205,12 @@ void global_data_all_processes::register_parameters(void)
   add_param("N_tau_part", &N_tau_part, PARAM_INT, PARAM_FIXED);
   add_param("Nu_part_deg", &Nu_part_deg, PARAM_INT, PARAM_FIXED);
 #endif
-
+/*
+#ifdef CREATE_HDM_GRID
+  add_param("N_hdm_types", &N_hdm_types, PARAM_INT, PARAM_FIXED);
+  add_param("hdm_part_deg", &hdm_part_deg, PARAM_INT, PARAM_FIXED);
+#endif
+*/
 #ifdef CB_PHASE
   add_param("deltagridFILE", deltagridFILE, PARAM_STRING, PARAM_FIXED);
   add_param("CBPowerSpectrumFile", CBPowerSpectrumFile, PARAM_STRING, PARAM_FIXED);
@@ -216,7 +221,7 @@ void global_data_all_processes::register_parameters(void)
 #endif
 
 //#ifdef CREATE_GRID
-#if defined(CREATE_GRID) || defined(ADDITIONAL_GRID)
+#if defined(CREATE_GRID) || defined(ADDITIONAL_GRID) || defined(CREATE_HDM_GRID)
   add_param("GridSize", &GridSize, PARAM_INT, PARAM_FIXED);
 #endif
 }
