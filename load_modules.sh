@@ -25,5 +25,5 @@ esac
 
 echo ''
 echo "Using following modules: "
-echo $(module list | sed -n '2p')
+echo $(module list | sed 's/Currently Loaded Modulefiles://g' | sed 's/Key://g' | sed 's/(symbolic-version)//g' | awk '{for(i=1; i      <=NF; i++) if ($i !~ /^[0-9]+\)/) print $i}')
 echo ''
