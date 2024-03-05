@@ -1,6 +1,6 @@
 
 %----  Relevant files 
-InitCondFile         ../LinResp/output/snapshot_001
+InitCondFile         ./output_snapshot_000 
 OutputDir            ./output
 SnapshotFileBase     snapshot
 OutputListFilename   outputs.txt
@@ -11,15 +11,15 @@ ICFormat             3
 SnapFormat           3 
 
 %---- CPU-time limits
-TimeLimitCPU              8640000   % 24h, in seconds
-CpuTimeBetRestartFile     82800     % 23h,  in seconds
+TimeLimitCPU              8640000   % seconds
+CpuTimeBetRestartFile     82800     % seconds
 
 %----- Memory alloction
-MaxMemSize                2900    % in MByte
+MaxMemSize                2900    % MByte
 
 %---- Caracteristics of run
-TimeBegin                 0.02       % Begin of the simulation, z = 49.0
-TimeMax	                  1.0        % End of the simulation,   z = 0
+TimeBegin                 0.1   % Initial time 
+TimeMax	                  1.0   % Final time 
 
 %---- Basic code options that set the type of simulation
 ComovingIntegrationOn     1 
@@ -28,11 +28,11 @@ ComovingIntegrationOn     1
 Omega0                    0.3192
 OmegaLambda               0.6808
 OmegaBaryon               0.0493
-OmegaNuPart               0.0                  % density of ALL the converted neutrinos, including the one you are converting now
-OmegaNuLin                0.0071       % density of neutrinos that remain as linear response
+OmegaNuPart               0.0       % Including converted streams       
+OmegaNuLin                0.0071    % Linear response only 
 HubbleParam               0.6724
 Hubble                    100.0
-BoxSize                   90.0
+BoxSize                   128.0     % Mpc/h
 NLR                       2
 
 %---- Output frequency and output paramaters
@@ -73,23 +73,23 @@ GravityConstantInternal  0
 %---- Gravitational softening length
 SofteningComovingClass0      0.0           ; 10 kpc/h
 SofteningMaxPhysClass0       0.0
-SofteningComovingClass1      0.005859375
-SofteningMaxPhysClass1       0.005859375
-%SofteningComovingClass2      0.05
-%SofteningMaxPhysClass2       0.05
-%SofteningComovingClass3      0.05
-%SofteningMaxPhysClass3       0.05
-%SofteningComovingClass4      0.05
-%SofteningMaxPhysClass4       0.05
-%SofteningComovingClass5      0.05
-%SofteningMaxPhysClass5       0.05
+SofteningComovingClass1      0.05
+SofteningMaxPhysClass1       0.05
+SofteningComovingClass2      0.05
+SofteningMaxPhysClass2       0.05
+SofteningComovingClass3      0.05
+SofteningMaxPhysClass3       0.05
+SofteningComovingClass4      0.05
+SofteningMaxPhysClass4       0.05
+SofteningComovingClass5      0.05
+SofteningMaxPhysClass5       0.05
 
-%SofteningClassOfPartType0    1
-%SofteningClassOfPartType1    1
-%SofteningClassOfPartType2    2
-%SofteningClassOfPartType3    3
-%SofteningClassOfPartType4    4
-%SofteningClassOfPartType5    5
+SofteningClassOfPartType0    1
+SofteningClassOfPartType1    1
+SofteningClassOfPartType2    2
+SofteningClassOfPartType3    3
+SofteningClassOfPartType4    4
+SofteningClassOfPartType5    5
 
 %----- SPH
 ArtBulkViscConst             1.0
@@ -98,7 +98,7 @@ InitGasTemp                  0
 
 
 %----- N-GenIC
-NSample                                           1024
+NSample                                           512 
 GridSize                                          512
 Seed                                              2827492
 SphereMode                                        1

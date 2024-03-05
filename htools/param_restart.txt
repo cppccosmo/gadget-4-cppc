@@ -1,6 +1,6 @@
 
 %----  Relevant files 
-InitCondFile         ../LinResp/output/snapshot_001
+InitCondFile         ./output/snapshot_000
 OutputDir            ./output
 SnapshotFileBase     snapshot
 OutputListFilename   outputs.txt
@@ -11,15 +11,15 @@ ICFormat             3
 SnapFormat           3 
 
 %---- CPU-time limits
-TimeLimitCPU              8640000   % 24h, in seconds
-CpuTimeBetRestartFile     720000    % 2h,  in seconds
+TimeLimitCPU              8640000   % seconds
+CpuTimeBetRestartFile     720000    % seconds
 
 %----- Memory alloction
-MaxMemSize                2900    % in MByte
+MaxMemSize                2900    % MByte
 
 %---- Caracteristics of run
-TimeBegin                 0.1   % Begin of the simulation, z = 9.0
-TimeMax	                  1.0        % End of the simulation,   z = 0
+TimeBegin                 0.1   % Initial time 
+TimeMax	                  1.0   % Final time 
 
 %---- Basic code options that set the type of simulation
 ComovingIntegrationOn     1 
@@ -28,11 +28,11 @@ ComovingIntegrationOn     1
 Omega0                    0.2549097401
 OmegaLambda               0.7351715929
 OmegaBaryon               0.0
-OmegaNuPart               0.000991866693       % density of ALL the converted neutrinos, including the one you are converting now
-OmegaNuLin                0.008926800237       % density of neutrinos that remain as linear response
+OmegaNuPart               0.0       % Including converted streams       
+OmegaNuLin                0.0071    % Linear response only 
 HubbleParam               0.71
 Hubble                    100.0
-BoxSize                   256.0
+BoxSize                   256.0     % Mpc/h
 NLR                       2
 
 %---- Output frequency and output paramaters
@@ -64,9 +64,9 @@ DesNumNgb                        64
 MaxNumNgbDeviation               1 
 
 %---- System of units
-UnitLength_in_cm         3.085678e24        ;  Mpc / h
-UnitMass_in_g            1.989e43           ;  1.0e10 Msun / h
-UnitVelocity_in_cm_per_s 1e5                ;  1 km/sec
+UnitLength_in_cm         3.085678e24     ;  Mpc / h
+UnitMass_in_g            1.989e43        ;  1.0e10 Msun / h
+UnitVelocity_in_cm_per_s 1e5             ;l  1 km/sec
 GravityConstantInternal  0
 
 
@@ -98,23 +98,23 @@ InitGasTemp                  0
 
 
 %----- N-GenIC
-NSample                                           1024
+NSample                                           512 
 GridSize                                          512
 Seed                                              2827492
 SphereMode                                        1
 PowerSpectrumType                                 2
 ReNormalizeInputSpectrum                          0
-PrimordialIndex                                   1.0               % this is the primordial index of whatever is supplied in PowerSpectrum File, which in this case is the neutrinos, so it shouldn't be tilted!
+PrimordialIndex                                   1.0       % No tilting! 
 ShapeGamma                                        0.21
 Sigma8                                            0.8
 CBPowerSpectrumFile				  M000nu05_cb_IC_z9_Ntau20_Nmu20_N512_L256.txt 
 PowerSpectrumFile                                 M000nu05_nu_str1-2_IC_z9_Ntau20_Nmu20_N512_L256.txt
 GrowthRateFile                                    M000nu05_nu_str1-2_f_z9_Ntau20_Nmu20_N512_L256.txt
 InputSpectrum_UnitLength_in_cm                    3.085678e24
-stream_vel					  295.087   % km / s comoving velocity for the stream you are converting 
-N_tau_part					  1             %total number of neutrino batches that have been converted, including the one you are converting now.
-Nu_part_deg					  2             %how many multifluid streams does each N_tau_part represent
+StreamVelListFilename                             vel_list.txt  
+N_tau_part					  1   % Nu particle types converted, including this
+Nu_part_deg					  2   % Streams per particle type 
 
 %------ conversion package
-ynuFile						  ../LinResp/output/y_nu/y_nu_0.100.dat
-deltagridFILE					  ../LinResp/output/delta_grid/delta_grid_0.100.dat
+ynuFile						  ./output/y_nu/y_nu_0.100.dat
+deltagridFILE					  ./output/delta_grid/delta_grid_0.100.dat

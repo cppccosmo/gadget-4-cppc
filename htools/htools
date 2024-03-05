@@ -4,7 +4,7 @@ OPT=$1                           # 'start'
 				 # 'restart'         (Hybris sims)
                                  # 'postprocess'   
 
-SIMFOLDER='output'               # Output of simulation to consider 
+OUTPUT=output                    # Output of simulation to consider 
 
 # Class ------------------------------------------------------------------------------------
 
@@ -21,15 +21,18 @@ OUTPUT_PRINT=2
 
 NPARTS=512                       # Number of CDM particles
 ZIN=99.0                         # Initial redshift in gadget
-BOXSIZE=512.0                    # BoxSize for gadget in Mpc/h
+BOXSIZE=128.0                    # BoxSize for gadget in Mpc/h
+SOFT=0.04                        # Softening length in units of BoxSize/NumParts^(1/3)
 OUTPUT_G="49 19 9 5 3 2 1 0"     # Gadget snapshot output redshifts 
 LR_HDM=2                         # Linear response type: 1 SE, 2 MF, 3 GSE
 
 # Hybrid restart --------------------------------------------------------------------------
 
-BASE=output
-SNAP=2                           # Snapshot taken as IC
-NSTREAMS=2			 # Number pof streams converted as particles
+ROOT_IN=output
+ROOT_OUT=output_c1
+SNAP=0                           # Snapshot taken as IC
+CTYPE=1                          # Conversion particle type (after PTYPE=1)
+NSTREAMS=2			 # Number of streams converted as particles
 ISTREAM=1                        # First of the NSTREAMS to be converted, first overall is 1
 
 # Post -------------------------------------------------------------------------------------
@@ -37,9 +40,6 @@ ISTREAM=1                        # First of the NSTREAMS to be converted, first 
 #SNAP_BASE=snapshot               # Name of snapshot base 
 #SNAP=7                           # Snapshot number, format %03d
 #PTYPE=1                          # Particle type to analyse         
-# TO FINISH
-#iStream=0                       # First stream to covert                      
-#Streams=10                      # Streams to convert                  
 #pindex=0                        # 0: Projection plot 
                                  # 1: Power spectra (delta, velocity, momentum) per ptype
                                  # 2: Neutrino combined spectr
@@ -49,137 +49,187 @@ ISTREAM=1                        # First of the NSTREAMS to be converted, first 
 
 cdir=$(pwd)
 source scripts/cosmologies.sh $COSMO_MODEL
-echo $COSMO_MHDM
 
 case $OPT in
 
     start)
 
-    EXEC_CLASS=./class
-    EXEC_MF=./MuFLR
-    
-    CLASS_ROOT=$(grep 'root' class_template_LR.ini | sed -n 2p | awk '{print $3}' | awk -F"/" '{print $1}')
-    mkdir -p $CLASS_ROOT
-    
-    echo ''
-    echo 'Starting simulation with model' $COSMO_MODEL 
-    source scripts/cosmofiles.sh  $CLASS_RES # Create mf file, modify .ini file to match cosmology 
-    echo ''
+        EXEC_CLASS=./class
+        EXEC_MF=./MuFLR
+        
+        CLASS_ROOT=$(grep 'root' class_template_LR.ini | sed -n 2p | awk '{print $3}' | awk -F"/" '{print $1}')
+        mkdir -p $CLASS_ROOT
+        
+        echo ''
+        echo 'Starting simulation with model' $COSMO_MODEL 
+        source scripts/cosmofiles.sh  $CLASS_RES # Create mf file, modify .ini file to match cosmology 
+        echo ''
 
-    echo 'Running class ...'
-    (time ${EXEC_CLASS} input_class_${COSMO_MODEL}.ini) >& info/output_class_${COSMO_MODEL}.txt
-    echo 'Done!'
-    
-    NK=$(grep "NK" info/log.txt | awk '{print $3}') 
-    N_MU=$(grep "N_MU" info/log.txt | sed -n 1p | awk '{print $3}') 
-    N_TAU=$(grep "N_TAU" info/log.txt |  sed -n 1p | awk '{print $3}') 
-    
-    echo ''
-    echo 'Running MuFLR ...'
-    (time ${EXEC_MF} ./params_MuFLR-HDM.dat ) >& mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
-    echo 'Done!'
-    
-    INPUT=mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
-    OUTPUT_BASE=${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}
-    
-    LI=$(cat $INPUT | grep "momenta" | awk -F': ' '{print $3}')
-    LLI=$(cat $INPUT | grep "momenta" | awk -F': ' '{print $3}' | awk '{print NF}' )
+        echo 'Running class ...'
+        (time ${EXEC_CLASS} input_class_${COSMO_MODEL}.ini) >& info/output_class_${COSMO_MODEL}.txt
+        echo 'Done!'
+        
+        NK=$(grep "NK" info/log.txt | awk '{print $3}') 
+        N_MU=$(grep "N_MU" info/log.txt | sed -n 1p | awk '{print $3}') 
+        N_TAU=$(grep "N_TAU" info/log.txt |  sed -n 1p | awk '{print $3}') 
+        
+        echo ''
+        echo 'Running MuFLR ...'
+        (time ${EXEC_MF} ./params_MuFLR-HDM.dat ) >& mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
+        echo 'Done!'
+        
+        INPUT=mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
+        OUTPUT_BASE=${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}
+        
+        LI=$(cat $INPUT | grep "momenta" | awk -F': ' '{print $3}')
+        LLI=$(cat $INPUT | grep "momenta" | awk -F': ' '{print $3}' | awk '{print NF}' )
 
-    touch tau_table.txt
-    for ((I=0; I<${LLI}; I++)); do
-        echo $LI | awk -v j=$(echo $I+1 | bc) '{print $j}' | awk '{printf("%.9f\n",$1)}' >> tau_table.txt
-    done
+        touch tau_table.txt
+        for ((I=0; I<${LLI}; I++)); do
+            echo $LI | awk -v j=$(echo $I+1 | bc) '{print $j}' | awk '{printf("%.9f\n",$1)}' >> tau_table.txt
+        done
 
-    NZ=$(echo $(grep "^[0-9]" ${INPUT} | wc -l) "/${NK}" | bc)
+        NZ=$(echo $(grep "^[0-9]" ${INPUT} | wc -l) "/${NK}" | bc)
 
-    for ((IZ=0; IZ<${NZ}; IZ++)); do
-        NH=$(echo "(1+${IZ})*${NK}" | bc)
-        ZH=$(echo $OUTPUT_Z | awk -v j=$(echo $IZ+1 | bc) '{print $j}')
-        grep "^[0-9]" ${INPUT} | head -${NH} | tail -${NK} | awk '{print $1, $2}' > ${OUTPUT_BASE}_z${ZH}_Pk.txt
-        grep "^[0-9]" ${INPUT} | head -${NH} | tail -${NK} | awk '{print $1, $3/$2}' > ${OUTPUT_BASE}_z${ZH}_f.txt
-        if [[ $IZ -gt 0 ]]; then
-            mv ${OUTPUT_BASE}_z${ZH}_Pk.txt ${OUTPUT_BASE}_z${ZH}_f.txt mf_data
+        for ((IZ=0; IZ<${NZ}; IZ++)); do
+            NH=$(echo "(1+${IZ})*${NK}" | bc)
+            ZH=$(echo $OUTPUT_Z | awk -v j=$(echo $IZ+1 | bc) '{print $j}')
+            grep "^[0-9]" ${INPUT} | head -${NH} | tail -${NK} | awk '{print $1, $2}' > ${OUTPUT_BASE}_z${ZH}_Pk.txt
+            grep "^[0-9]" ${INPUT} | head -${NH} | tail -${NK} | awk '{print $1, $3/$2}' > ${OUTPUT_BASE}_z${ZH}_f.txt
+            if [[ $IZ -gt 0 ]]; then
+                mv ${OUTPUT_BASE}_z${ZH}_Pk.txt ${OUTPUT_BASE}_z${ZH}_f.txt mf_data
+            fi
+        done
+        echo ''
+        echo 'Setting files for Gadget ...'
+
+        if test -f "outputs.txt"; then
+            rm outputs.txt
         fi
-    done
-    echo ''
-    echo 'Setting files for Gadget ...'
+        touch outputs.txt
+        NR=$(echo $OUTPUT_G | awk '{print NF}')
+        for ((IZ=0; IZ<${NR}; IZ++)); do
+            AO=$(echo $OUTPUT_G | awk -v j=$(echo $IZ+1 | bc) '{print $j}' | awk '{printf("%.5f\n",1/(1+$1))}')
+            echo $AO >> outputs.txt
+        done
+        
+        SEL_RED=$(echo $OUTPUT_Z | awk '{print $1}') 
+        PK_FILE=${OUTPUT_BASE}_z${SEL_RED}_Pk.txt
+        THK_FILE=${OUTPUT_BASE}_z${SEL_RED}_f.txt
+        COSMO_OL=$(echo 1 - $COSMO_OM | bc | awk '{printf("%.4f",$0)}')    
+        COSMO_OMM=$(echo $COSMO_OM - $COSMO_OH| bc | awk '{printf("%.4f",$0)}')    
+        AIN=$(echo $ZIN | awk '{print 1/(1+$1)}')
+        SOFT_LENGTH=$(echo "scale=4; $SOFT*$BOXSIZE/$NPARTS" | bc -l)
 
-    if test -f "outputs.txt"; then
-        rm outputs.txt
-    fi
-    touch outputs.txt
-    NR=$(echo $OUTPUT_G | awk '{print NF}')
-    for ((IZ=0; IZ<${NR}; IZ++)); do
-        AO=$(echo $OUTPUT_G | awk -v j=$(echo $IZ+1 | bc) '{print $j}' | awk '{printf("%.5f\n",1/(1+$1))}')
-        echo $AO >> outputs.txt
-    done
-    
-    SEL_RED=$(echo $OUTPUT_Z | awk '{print $1}') 
-    PK_FILE=${OUTPUT_BASE}_z${SEL_RED}_Pk.txt
-    THK_FILE=${OUTPUT_BASE}_z${SEL_RED}_f.txt
-    COSMO_OL=$(echo 1 - $COSMO_OM | bc | awk '{printf("%.4f",$0)}')    
-    COSMO_OMM=$(echo $COSMO_OM - $COSMO_OH| bc | awk '{printf("%.4f",$0)}')    
-    AIN=$(echo $ZIN | awk '{print 1/(1+$1)}')
-
-    sed -e s/TEMPLATE_P_ZIN/${AIN}/ \
-        -e s/TEMPLATE_P_OM${COSMO_OMM}/ \
-        -e s/TEMPLATE_P_OL/${COSMO_OL}/ \
-        -e s/TEMPLATE_P_OB/${COSMO_OB}/ \
-        -e s/TEMPLATE_P_OH/${COSMO_OH}/ \
-        -e s/TEMPLATE_P_H0/${COSMO_H0}/ \
-        -e s/TEMPLATE_P_SIG8/${COSMO_SIG8}/ \
-        -e s/TEMPLATE_P_BOXSIZE/${BOXSIZE}/ \
-        -e s/TEMPLATE_P_NUMPARTS/${NPARTS}/ \
-        -e s/TEMPLATE_P_MASSHDM/${COSMO_MHDM}/ \
-        -e s/TEMPLATE_P_NLR/${LIN_HDM}/ \
-        -e s/TEMPLATE_POWERSPECTRUM/${PK_FILE}/ \
-        -e s/TEMPLATE_GROWTHRATE/${THK_FILE}/ param_template.txt > param.txt
-    
-    echo 'Param.txt file is ready, check to be sure!!'
-    sleep 1
-    echo 'Ready to qsub gadget-run'
-    ;;
+        if test -f "param.txt"; then
+            rm param.txt
+        fi
+  
+        sed -e s/TEMPLATE_P_ZIN/${AIN}/g \
+            -e s/TEMPLATE_P_OM/${COSMO_OMM}/g \
+            -e s/TEMPLATE_P_OL/${COSMO_OL}/g \
+            -e s/TEMPLATE_P_OB/${COSMO_OB}/g \
+            -e s/TEMPLATE_P_OH/${COSMO_OH}/g \
+            -e s/TEMPLATE_P_H0/${COSMO_H0}/g \
+            -e s/TEMPLATE_P_SIG8/${COSMO_SIG8}/g \
+            -e s/TEMPLATE_P_BOXSIZE/${BOXSIZE}/g \
+            -e s/TEMPLATE_P_SOFT/${SOFT_LENGTH}/g \
+            -e s/TEMPLATE_P_NUMPARTS/${NPARTS}/g \
+            -e s/TEMPLATE_P_MASSHDM/${COSMO_MHDM}/g \
+            -e s/TEMPLATE_P_NLR/${LR_HDM}/g \
+            -e s/TEMPLATE_POWERSPECTRUM/${PK_FILE}/g \
+            -e s/TEMPLATE_GROWTHRATE/${THK_FILE}/g param_template.txt > param.txt
+        
+        echo 'param.txt file is ready, check to be sure!!'
+        sleep 1
+        ;;
     
     restart) 
 
-    # Script to restart a hybrid simulation 
-    # Pre-processing and preparation of the param file included 
+        echo 'Restart Hybrid simulation in folder' $ROOT_OUT 
+        
+        SNAPN=$(printf "%03d" $SNAP)
+        ICFILE=$ROOT_IN/snapshot_$SNAPN
+        NEWT=$(h5dump -a Header/Time $ROOT_IN/snapshot_$SNAPN.hdf5 | grep "(0)" | awk '{print $2}')    
+        SOFT_LENGTH=$(echo "scale=4; $SOFT*$BOXSIZE/$NPARTS" | bc -l)
+        echo $SOFT_LENGTH
+        TOT_STREAMS=$(cat tau_table.txt | wc -l)
+        
+        if [ ! -f "hdm_budget.txt" ]; then
+            python3 scripts/hdm_budget.py 0 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE 
+            BUF=$(python3 scripts/hdm_budget.py 1 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
+            COSMO_OHL=$(echo $BUF | awk '{print $1}')
+            COSMO_OHP=$(echo $BUF | awk '{print $2}')
+        else
+            BUF=$(python3 scripts/hdm_budget.py 1 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
+            COSMO_OHL=$(echo $BUF | awk '{print $1}')
+            COSMO_OHP=$(echo $BUF | awk '{print $2}')
+        fi
+        
+        if [ ! -f "vel_list_full.txt" ]; then 
+            touch vel_list_full.txt
+            C=299792.458
+            awk -v M=$COSMO_MHDM -v C=$C '{print $1*C/M}' tau_table.txt > vel_list_full.txt 
+        fi
+        
+        MIN=$ISTREAM
+        MAX=$(echo $NSTREAMS+$ISTREAM-1 | bc)
+        cat vel_list.txt | awk 'NR >=$MIN && NR <=$MAX {print}' > vel_list.txt 
+        VLIST_FILE=vel_list.txt
+        
 
-    echo 'Restart Hybrid simulation in folder' $SIMFOLDER
-    ROOT=$SIMFOLDER/
-    
-    # Call main python script 
-    #python3 scripts/prepare_hr.py $ROOT
-    
-    NEWT=$(h5dump -a Header/Time $ICSNAP | grep "(0)" | awk '{print $2}')    
-    echo $NEWT
+        CONVN=$(printf "%03d" $CTYPE)
+        echo $CONVN
+        python3 scripts/hybrid_files.py $ROOT_IN $SNAP $NSTREAMS $ISTREAM
+        PK_FILE=PSFile_c$CONVN.txt
+        GR_FILE=GRFile_c$CONVN.txt
+        CB_FILE=CBFile_c$CONVN.txt
 
-    #c=299792458
-    #tau=$(sed -n '1p' $SimFolder/$MfOut.txt | awk '{print $4}')
-    #Stream_Vel=$(echo "$tau/$mass*$c/1000 " | bc -l)
-    #echo 'Set stream velocity in the param.txt file as '$Stream_Vel '(km/s)'
-    
+        SCALE=$(printf "%.3f" $NEWT)
+        YNU_FILE=$ROOT_IN/y_nu/y_nu_$SCALE.dat
+        DELTA_FILE=$ROOT_IN/delta_grid/delta_grid_$SCALE.dat
 
-    # Avoid overwriting 
-    rm -f param_restart.txt
-    touch param_restart.txt
-    sed -e s/TEMPLATE_P_ZIN/${NEWT}/ \
-        -e s/TEMPLATE_P_OHP/${COSMO_OHP}/ \
-        -e s/TEMPLATE_P_OHLR/${COSMO_OHLR}/ \
-        -e s/TEMPLATE_POWERSPECTRUM/${PK_FILE}/ \
-        -e s/TEMPLATE_GROWTHRATE/${THK_FILE}/ param_restart_template.txt > param_restart.txt
-    
-    echo 'Param.txt file is ready, check to be sure!!'
-    ;;
+        if [ -f "param_restart.txt" ]; then
+            rm param_restart.txt
+            touch param_restart.txt
+        fi
+        
+        sed -e "s|TEMPLATE_P_ICFILE|${ICFILE}|g" \
+            -e "s|TEMPLATE_P_OUTDIR|${ROOT_OUT}|g" \
+            -e "s|TEMPLATE_P_ZIN|${NEWT}|g" \
+            -e "s|TEMPLATE_P_OM|${COSMO_OMM}|g" \
+            -e "s|TEMPLATE_P_OL|${COSMO_OL}|g" \
+            -e "s|TEMPLATE_P_OB|${COSMO_OB}|g" \
+            -e "s|TEMPLATE_P_OH|${COSMO_OH}|g" \
+            -e "s|TEMPLATE_P_OHP|${COSMO_OHP}|g" \
+            -e "s|TEMPLATE_P_H0|${COSMO_H0}|g" \
+            -e "s|TEMPLATE_P_BOXSIZE|${BOXSIZE}|g" \
+            -e "s|TEMPLATE_P_NUMPARTS|${NPARTS}|g" \
+            -e "s|TEMPLATE_P_MASSHDM|${COSMO_MHDM}|g" \
+            -e "s|TEMPLATE_P_NLR|${LR_HDM}|g" \
+            -e "s|TEMPLATE_P_SOFT|${SOFT_LENGTH}|g" \
+            -e "s|TEMPLATE_P_HDMPART|${CTYPE}|g" \
+            -e "s|TEMPLATE_P_PARTDEG|${NSTREAMS}|g" \
+            -e "s|TEMPLATE_VLIST|${VLIST_FILE}|g" \
+            -e "s|TEMPLATE_CBSPECTRUM|${CB_FILE}|g" \
+            -e "s|TEMPLATE_POWERSPECTRUM|${PK_FILE}|g" \
+            -e "s|TEMPLATE_GROWTHRATE|${GR_FILE}|g" \
+            -e "s|TEMPLATE_YNU|${YNU_FILE}|g" \
+            -e "s|TEMPLATE_DELTAGRID|${DELTA_FILE}|g" param_restart_template.txt >> param_restart.txt
+        
+        echo 'param_restart.txt file is ready, check to be sure!!'
+        sleep 1
+        ;;
 
     postprocess)
-    mkdir -p postprocess
-    mkdir -p postprocess/plots postprocess/spectra #postprocess/render
+    
+        #mkdir -p postprocess
+        #mkdir -p postprocess/plots postprocess/spectra #postprocess/render
 
-    echo 'Post-processing simulation from folder' $SIMFOLDER
-    SNAPSHOT=$(printf "%03d" $SNAP)
-    echo "File: ${SNAP_BASE}_${SNAPSHOT}.hdf5"
-    python3 scripts/post.py $SIMFOLDER ${SNAP_BASE}_${SNAPSHOT} $PTYPE
-    ;;
+        #echo 'Post-processing simulation from folder' $SIMFOLDER
+        #SNAPSHOT=$(printf "%03d" $SNAP)
+        #echo "File: ${SNAP_BASE}_${SNAPSHOT}.hdf5"
+        #python3 scripts/post.py $SIMFOLDER ${SNAP_BASE}_${SNAPSHOT} $PTYPE
+        ;;
 esac
 
