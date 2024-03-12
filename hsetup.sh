@@ -46,15 +46,6 @@ then echo 'MuFLR has N_mu =' $NMU1 ', while gadget-4 has N_mu =' $NMU2
 fi
 
 while true; do
-  read -p 'Do you want to restart a MultiFluid simulation? [y/n] ' RES_MF
-  case $RES_MF in
-    [yY]) break;;
-    [nN]) break;;
-    *) echo "Please enter only 'y' or 'n'.";;
-  esac
-done
-
-while true; do
   read -p 'Do you want to restart a Hybrid simulation? [y/n] ' RES_HYB
   case $RES_HYB in
     [yY]) break;;
@@ -63,28 +54,30 @@ while true; do
   esac
 done
 
+while true; do
+  read -p 'Do you want to restart a MultiFluid simulation? [y/n] ' RES_MF
+  case $RES_MF in
+    [yY]) break;;
+    [nN]) break;;
+    *) echo "Please enter only 'y' or 'n'.";;
+  esac
+done
+
 case $RES_HYB in
     y)
-        case $RES_MF in 
-            y)
-                echo 'Preparing LR, MF and Hybrid'
-                source htools/scripts/build_full.sh # Hybrid restart and MF restart
-            ;;
-            n) 
-                echo 'Preparing LR and Hybrid'
-                source htools/scripts/build_HYB.sh # Hybrid restart only
-            ;;
-        esac
+        source htools/scripts/build_LR.sh $1 $2 
+        source htools/scripts/build_HY.sh $1
     ;;
     n)
         case $RES_MF in 
             y)
                 echo 'Preparing LR and MF'
-                source htools/scripts/build_MF.sh # MF restart only
+                source htools/scripts/build_LR.sh $1 $2 
+                source htools/scripts/build_MF.sh $1
             ;;
             n) 
                 echo 'Preparing LR'
-                source htools/scripts/build_LR.sh $1 $2 # LR only
+                source htools/scripts/build_LR.sh $1 $2 
             ;;
         esac
     ;;

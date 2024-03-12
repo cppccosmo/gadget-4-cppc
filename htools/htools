@@ -8,7 +8,7 @@ OUTPUT=output                    # Output of simulation to consider
 
 # Class ------------------------------------------------------------------------------------
 
-COSMO_MODEL=nu01                 # Cosmology model
+COSMO_MODEL=be05                 # Cosmology model
 CLASS_RES=0                      # Class precision 0: Low, 1: High
 
 # Multifluid -------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ OUTPUT_PRINT=2
 
 # N-body   ---------------------------------------------------------------------------------
 
-NPARTS=512                       # Number of CDM particles
+NPARTS=128                       # Number of CDM particles
 ZIN=99.0                         # Initial redshift in gadget
 BOXSIZE=128.0                    # BoxSize for gadget in Mpc/h
 SOFT=0.04                        # Softening length in units of BoxSize/NumParts^(1/3)
@@ -152,12 +152,11 @@ case $OPT in
         ICFILE=$ROOT_IN/snapshot_$SNAPN
         NEWT=$(h5dump -a Header/Time $ROOT_IN/snapshot_$SNAPN.hdf5 | grep "(0)" | awk '{print $2}')    
         SOFT_LENGTH=$(echo "scale=4; $SOFT*$BOXSIZE/$NPARTS" | bc -l)
-        echo $SOFT_LENGTH
         TOT_STREAMS=$(cat tau_table.txt | wc -l)
+        COSMO_OL=$(echo 1 - $COSMO_OM | bc | awk '{printf("%.4f",$0)}')    
         
-        if [ ! -f "hdm_budget.txt" ]; then
-            python3 scripts/hdm_budget.py 0 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE 
-            BUF=$(python3 scripts/hdm_budget.py 1 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
+        if [ ! -f "hdm_omega.txt" ]; then
+            BUF=$(python3 scripts/hdm_budget.py 0 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
             COSMO_OHL=$(echo $BUF | awk '{print $1}')
             COSMO_OHP=$(echo $BUF | awk '{print $2}')
         else
@@ -174,13 +173,11 @@ case $OPT in
         
         MIN=$ISTREAM
         MAX=$(echo $NSTREAMS+$ISTREAM-1 | bc)
-        cat vel_list.txt | awk 'NR >=$MIN && NR <=$MAX {print}' > vel_list.txt 
+        cat vel_list_full.txt | awk -v m=$MIN -v M=$MAX 'NR >=m && NR <=M {print}' > vel_list.txt
         VLIST_FILE=vel_list.txt
         
-
         CONVN=$(printf "%03d" $CTYPE)
-        echo $CONVN
-        python3 scripts/hybrid_files.py $ROOT_IN $SNAP $NSTREAMS $ISTREAM
+        python3 scripts/hybrid_files.py $ROOT_IN $SNAP $NSTREAMS $ISTREAM $CTYPE
         PK_FILE=PSFile_c$CONVN.txt
         GR_FILE=GRFile_c$CONVN.txt
         CB_FILE=CBFile_c$CONVN.txt
@@ -197,10 +194,10 @@ case $OPT in
         sed -e "s|TEMPLATE_P_ICFILE|${ICFILE}|g" \
             -e "s|TEMPLATE_P_OUTDIR|${ROOT_OUT}|g" \
             -e "s|TEMPLATE_P_ZIN|${NEWT}|g" \
-            -e "s|TEMPLATE_P_OM|${COSMO_OMM}|g" \
+            -e "s|TEMPLATE_P_OM|${COSMO_OM}|g" \
             -e "s|TEMPLATE_P_OL|${COSMO_OL}|g" \
             -e "s|TEMPLATE_P_OB|${COSMO_OB}|g" \
-            -e "s|TEMPLATE_P_OH|${COSMO_OH}|g" \
+            -e "s|TEMPLATE_P_OHL|${COSMO_OHL}|g" \
             -e "s|TEMPLATE_P_OHP|${COSMO_OHP}|g" \
             -e "s|TEMPLATE_P_H0|${COSMO_H0}|g" \
             -e "s|TEMPLATE_P_BOXSIZE|${BOXSIZE}|g" \

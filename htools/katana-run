@@ -11,7 +11,6 @@ cd $PBS_O_WORKDIR
 source scripts/load_modules.sh katana
 
 mpirun -np $NCPUS ./Gadget4 param.txt | tee log.txt
-
 #mpirun -np $NCPUS ./Gadget4-mf-restart param.txt | tee log_mf_restart.txt
 #mpirun -np $NCPUS ./Gadget4-hybrid-restart param_restart.txt | tee log_hybrid_restart.txt
     

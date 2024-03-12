@@ -1,4 +1,3 @@
-#LEAN                      
 PERIODIC              
 SELFGRAVITY
 #RANDOMIZE_DOMAINCENTER
