@@ -67,6 +67,8 @@ case $RES_HYB in
     y)
         source htools/scripts/build_LR.sh $1 $2 
         source htools/scripts/build_HY.sh $1
+        echo 'Ready to start in folder ' $1
+        sleep 1
     ;;
     n)
         case $RES_MF in 

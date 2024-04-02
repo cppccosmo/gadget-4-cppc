@@ -28,8 +28,8 @@ ComovingIntegrationOn     1
 Omega0                    TEMPLATE_P_OM
 OmegaLambda               TEMPLATE_P_OL
 OmegaBaryon               TEMPLATE_P_OB
-OmegaNuPart               TEMPLATE_P_OHP 
-OmegaNuLin                TEMPLATE_P_OHL     
+OmegaNuPart               TEMPLATE_P_OP 
+OmegaNuLin                TEMPLATE_P_OH     
 HubbleParam               TEMPLATE_P_H0
 Hubble                    100.0
 BoxSize                   TEMPLATE_P_BOXSIZE

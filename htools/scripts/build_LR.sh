@@ -79,6 +79,3 @@ echo ''                       >> $1/info/log.txt
 echo $(sed '/^#/d' Config.sh) >> $1/info/log.txt 
 echo ''                       >> $1/info/log.txt
 
-echo 'Ready to start in folder ' $1
-sleep 1
-

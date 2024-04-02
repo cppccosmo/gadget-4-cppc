@@ -197,8 +197,8 @@ case $OPT in
             -e "s|TEMPLATE_P_OM|${COSMO_OM}|g" \
             -e "s|TEMPLATE_P_OL|${COSMO_OL}|g" \
             -e "s|TEMPLATE_P_OB|${COSMO_OB}|g" \
-            -e "s|TEMPLATE_P_OHL|${COSMO_OHL}|g" \
-            -e "s|TEMPLATE_P_OHP|${COSMO_OHP}|g" \
+            -e "s|TEMPLATE_P_OH|${COSMO_OHL}|g" \
+            -e "s|TEMPLATE_P_OP|${COSMO_OHP}|g" \
             -e "s|TEMPLATE_P_H0|${COSMO_H0}|g" \
             -e "s|TEMPLATE_P_BOXSIZE|${BOXSIZE}|g" \
             -e "s|TEMPLATE_P_NUMPARTS|${NPARTS}|g" \
