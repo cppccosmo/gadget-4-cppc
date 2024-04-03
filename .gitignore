@@ -13,3 +13,5 @@ hsetup_old.sh
 htools/pk_ref.pre
 htools/class_template.ini
 htools/nu.ini
+htools/scripts/deprecated
+htools/scripts/__pycache__/
