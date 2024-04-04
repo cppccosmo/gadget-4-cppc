@@ -23,10 +23,10 @@ if [[ $NMU1 != $NMU2 ]]; then
     exit 1
 fi
 
-cp htools/param_restart_template.txt $1
+cp htools/templates/param_restart_template.txt $1
 
-echo 'Compiling Gadget4 hybrid ...'
-make -j CONFIG=Config_hybrid_restart.sh EXEC=$1/Gadget4-hybrid-restart BUILD_DIR=$1/build_hy >> $1/info/compilation.txt 2> $1/info/issues.txt 
+echo 'Building Gadget4-hybrid-restart ...'
+make -j CONFIG=Config_hybrid_restart.sh EXEC=$1/Gadget4-hybrid-restart BUILD_DIR=$1/build_hy >> $1/info/compilation_hy.txt 2> $1/info/issues_hy.txt 
 
 sleep 1
 

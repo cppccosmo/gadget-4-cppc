@@ -1,7 +1,7 @@
 
 %----  Relevant files 
-InitCondFile         TEMPLATE_P_ICFILE 
-OutputDir            TEMPLATE_P_OUTDIR 
+InitCondFile         ./ 
+OutputDir            ./output
 SnapshotFileBase     snapshot
 OutputListFilename   outputs.txt
 
@@ -11,15 +11,15 @@ ICFormat             3
 SnapFormat           3 
 
 %---- CPU-time limits
-TimeLimitCPU              8640000  % seconds
-CpuTimeBetRestartFile     82800    % seconds
+TimeLimitCPU              8640000   % seconds
+CpuTimeBetRestartFile     82800     % seconds
 
 %----- Memory alloction
-MaxMemSize                1900     % MByte
+MaxMemSize                2900      % MByte
 
 %---- Caracteristics of run
 TimeBegin                 TEMPLATE_P_ZIN 
-TimeMax	                  1.0     
+TimeMax	                  1.0    
 
 %---- Basic code options that set the type of simulation
 ComovingIntegrationOn     1 
@@ -28,7 +28,7 @@ ComovingIntegrationOn     1
 Omega0                    TEMPLATE_P_OM
 OmegaLambda               TEMPLATE_P_OL
 OmegaBaryon               TEMPLATE_P_OB
-OmegaNuPart               TEMPLATE_P_OP 
+OmegaNuPart               0.0 
 OmegaNuLin                TEMPLATE_P_OH     
 HubbleParam               TEMPLATE_P_H0
 Hubble                    100.0
@@ -106,17 +106,12 @@ Seed                                              2827492
 SphereMode                                        1
 PowerSpectrumType                                 2
 ReNormalizeInputSpectrum                          0
-PrimordialIndex                                   1.0               
+PrimordialIndex                                   1.0   
 ShapeGamma                                        0.21
 Sigma8                                            0.8
-CBPowerSpectrumFile				  TEMPLATE_CBSPECTRUM 
 PowerSpectrumFile                                 TEMPLATE_POWERSPECTRUM
 GrowthRateFile                                    TEMPLATE_GROWTHRATE
 InputSpectrum_UnitLength_in_cm                    3.085678e24
-StreamVelListFilename			          TEMPLATE_VLIST 
-N_tau_part					  TEMPLATE_P_HDMPART
-Nu_part_deg					  TEMPLATE_P_PARTDEG
 
-%------ conversion package
-ynuFile						  TEMPLATE_YNU 
-deltagridFILE					  TEMPLATE_DELTAGRID 
+%----- MF 
+ynuFile                                           TEMPLATE_YNU

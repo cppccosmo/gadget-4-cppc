@@ -1,0 +1,122 @@
+
+%----  Relevant files 
+InitCondFile         TEMPLATE_P_ICFILE 
+OutputDir            TEMPLATE_P_OUTDIR 
+SnapshotFileBase     snapshot
+OutputListFilename   outputs.txt
+
+
+%---- File formats
+ICFormat             3
+SnapFormat           3 
+
+%---- CPU-time limits
+TimeLimitCPU              8640000  % seconds
+CpuTimeBetRestartFile     82800    % seconds
+
+%----- Memory alloction
+MaxMemSize                1900     % MByte
+
+%---- Caracteristics of run
+TimeBegin                 TEMPLATE_P_ZIN 
+TimeMax	                  1.0     
+
+%---- Basic code options that set the type of simulation
+ComovingIntegrationOn     1 
+
+%---- Cosmological parameters
+Omega0                    TEMPLATE_P_OM
+OmegaLambda               TEMPLATE_P_OL
+OmegaBaryon               TEMPLATE_P_OB
+OmegaNuPart               TEMPLATE_P_OP 
+OmegaNuLin                TEMPLATE_P_OH     
+HubbleParam               TEMPLATE_P_H0
+Hubble                    100.0
+BoxSize                   TEMPLATE_P_BOXSIZE
+NumHDM                    3.044
+MassHDM                   TEMPLATE_P_MASSHDM
+NLR                       TEMPLATE_P_NLR
+
+%---- Output frequency and output paramaters
+OutputListOn              1 
+TimeBetSnapshot           0.0
+TimeOfFirstSnapshot       0.0
+TimeBetStatistics         0.01
+NumFilesPerSnapshot       1
+MaxFilesWithConcurrentIO  1 
+
+%---- Accuracy of time integration
+ErrTolIntAccuracy        0.01 
+CourantFac               0.3
+MaxSizeTimestep          0.05
+MinSizeTimestep          0.0 
+
+%---- Tree algorithm, force accuracy, domain update frequency
+TypeOfOpeningCriterion                1
+ErrTolTheta                           0.75
+ErrTolThetaMax                        1.0
+ErrTolForceAcc                        0.002
+TopNodeFactor                         3.0
+
+ActivePartFracForNewDomainDecomp      0.01
+%ActivePartFracForPMinsteadOfEwald     0.05
+
+%---- Initial density estimate
+DesNumNgb                        64
+MaxNumNgbDeviation               1 
+
+%---- System of units
+UnitLength_in_cm         3.085678e24        %  Mpc/h
+UnitMass_in_g            1.989e43           %  1.0e10 Msun/h
+UnitVelocity_in_cm_per_s 1e5                %  km/s
+GravityConstantInternal  0
+
+
+%---- Gravitational softening length
+SofteningComovingClass0      0.0           
+SofteningMaxPhysClass0       0.0
+SofteningComovingClass1      TEMPLATE_P_SOFT 
+SofteningMaxPhysClass1       TEMPLATE_P_SOFT 
+SofteningComovingClass2      TEMPLATE_P_SOFT 
+SofteningMaxPhysClass2       TEMPLATE_P_SOFT
+SofteningComovingClass3      TEMPLATE_P_SOFT
+SofteningMaxPhysClass3       TEMPLATE_P_SOFT
+SofteningComovingClass4      TEMPLATE_P_SOFT
+SofteningMaxPhysClass4       TEMPLATE_P_SOFT
+SofteningComovingClass5      TEMPLATE_P_SOFT
+SofteningMaxPhysClass5       TEMPLATE_P_SOFT
+
+SofteningClassOfPartType0    1
+SofteningClassOfPartType1    1
+SofteningClassOfPartType2    2
+SofteningClassOfPartType3    3
+SofteningClassOfPartType4    4
+SofteningClassOfPartType5    5
+
+%----- SPH
+ArtBulkViscConst             1.0
+MinEgySpec                   0
+InitGasTemp                  0
+
+
+%----- N-GenIC
+NSample                                           TEMPLATE_P_NUMPARTS 
+GridSize                                          TEMPLATE_P_NUMPARTS 
+Seed                                              2827492
+SphereMode                                        1
+PowerSpectrumType                                 2
+ReNormalizeInputSpectrum                          0
+PrimordialIndex                                   1.0               
+ShapeGamma                                        0.21
+Sigma8                                            0.8
+CBPowerSpectrumFile				  TEMPLATE_CBSPECTRUM 
+PowerSpectrumFile                                 TEMPLATE_POWERSPECTRUM
+GrowthRateFile                                    TEMPLATE_GROWTHRATE
+InputSpectrum_UnitLength_in_cm                    3.085678e24
+StreamVelListFilename			          TEMPLATE_VLIST 
+N_tau_part					  TEMPLATE_P_HDMPART
+Nu_part_deg					  TEMPLATE_P_PARTDEG
+
+%------ MF/Hybrid
+ynuFile						  TEMPLATE_YNU 
+deltagridFILE					  TEMPLATE_DELTAGRID 

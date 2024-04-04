@@ -54,19 +54,24 @@ while true; do
   esac
 done
 
-while true; do
-  read -p 'Do you want to restart a MultiFluid simulation? [y/n] ' RES_MF
-  case $RES_MF in
-    [yY]) break;;
-    [nN]) break;;
-    *) echo "Please enter only 'y' or 'n'.";;
-  esac
-done
+if [[ $RES_HYB == "n" ]];
+then 
+    while true; do
+      read -p 'Do you want to restart a MultiFluid simulation? [y/n] ' RES_MF
+      case $RES_MF in
+        [yY]) break;;
+        [nN]) break;;
+        *) echo "Please enter only 'y' or 'n'.";;
+      esac
+    done
+fi 
 
 case $RES_HYB in
     y)
         source htools/scripts/build_LR.sh $1 $2 
+        source htools/scripts/build_MF.sh $1
         source htools/scripts/build_HY.sh $1
+        echo ''
         echo 'Ready to start in folder ' $1
         sleep 1
     ;;
@@ -76,10 +81,14 @@ case $RES_HYB in
                 echo 'Preparing LR and MF'
                 source htools/scripts/build_LR.sh $1 $2 
                 source htools/scripts/build_MF.sh $1
+                echo ''
+                echo 'Ready to start in folder ' $1
             ;;
             n) 
                 echo 'Preparing LR'
                 source htools/scripts/build_LR.sh $1 $2 
+                echo ''
+                echo 'Ready to start in folder ' $1
             ;;
         esac
     ;;

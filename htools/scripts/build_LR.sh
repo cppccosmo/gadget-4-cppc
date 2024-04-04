@@ -18,19 +18,19 @@ cp htools/scripts/*.py $1/scripts/
 cp htools/scripts/cosmofiles.sh $1/scripts/
 cp htools/scripts/cosmologies.sh $1/scripts/
 cp load_modules.sh $1/scripts
-cp htools/param_template.txt $1
-cp htools/class_template_LR.ini $1 
-cp htools/class_template_HR.ini $1 
+cp htools/templates/param_template.txt $1
+cp htools/templates/class_template_LR.ini $1 
+cp htools/templates/class_template_HR.ini $1 
 cp MF/distribution_functions/* $1/psd
 
 case $2 in
     katana)
-	cp htools/katana-run $1
-	cp htools/katana-tools $1
+	cp htools/jobs/katana-run $1
+	cp htools/jobs/katana-tools $1
     ;;
     gadi)
-	cp htools/gadi-run $1
-	cp htools/gadi-tools $1
+	cp htools/jobs/gadi-run $1
+	cp htools/jobs/gadi-tools $1
     ;;
 esac
 
@@ -55,7 +55,7 @@ echo ''
 
 sleep 1
 
-echo 'Compiling Gadget4 ...'
+echo 'Building Gadget4 ...'
 make -j CONFIG=Config.sh EXEC=$1/Gadget4 BUILD_DIR=$1/build >> $1/info/compilation.txt 2> $1/info/issues.txt 
 
 sleep 1
