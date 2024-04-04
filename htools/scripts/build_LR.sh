@@ -57,11 +57,6 @@ sleep 1
 
 echo 'Compiling Gadget4 ...'
 make -j CONFIG=Config.sh EXEC=$1/Gadget4 BUILD_DIR=$1/build >> $1/info/compilation.txt 2> $1/info/issues.txt 
-echo 'Done!'
-
-sleep 1
-
-echo 'Writing the log.txt ...'
 
 sleep 1
 

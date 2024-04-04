@@ -1,9 +1,12 @@
+import os, glob
 import h5py
-import glob
 import numpy as np
 import matplotlib.pyplot as plt
 import cmasher as cmr
+import Pk_library as PKL
 import MAS_library as MASL
+
+THREADS = len(os.sched_getaffinity(0))
 
 class Snap():
     def __init__(self, fname):
@@ -37,11 +40,12 @@ class Snap():
         return delta
 
     def projection(self, ptype, axis=0, threads=4, verbose=False, vmin=-1,vmax=2):
-        ptypes    = [ptype]
-        MAS       = 'CIC'
-        verbose   = verbose
-        threads   = threads
-        delta     = MASL.density_field_gadget(self.fname, ptypes, self.grid, MAS, do_RSD=False, axis=axis, verbose=verbose)
+        #ptypes    = [ptype]
+        #MAS       = 'CIC'
+        #verbose   = verbose
+        #threads   = threads
+        #delta     = MASL.density_field_gadget(self.fname, ptypes, self.grid, MAS, do_RSD=False, axis=axis, verbose=verbose)
+        delta = self.get_delta(ptype, axis=axis, threads=threads, verbose=verbose)
         fig,ax = plt.subplots(1,1,figsize=(13,12))
         im = ax.imshow(np.log10(np.mean(delta,axis=axis)),
                cmap='cmr.pride',origin='lower',
@@ -53,19 +57,33 @@ class Snap():
         plt.show()
 
 class PowerSpectra:
-    def __init__(self, sdir, verbose=False):
+    def __init__(self, sdir):
+        self.sdir   = sdir
         self.mf_dir = sdir + '/output'
         self.c1_dir = sdir + '/output_c1'
         self.c2_dir = sdir + '/output_c2'
         self.c3_dir = sdir + '/output_c3'
         self.c4_dir = sdir + '/output_c4'
+
+        self.L = int(np.loadtxt(sdir + '/output/powerspecs/powerspec_000.txt', max_rows=3)[-1])
+
+        c0   = int(np.loadtxt(sdir + '/output/powerspecs/powerspec_000.txt', max_rows=2)[-1])
+        self.k_c0   = np.loadtxt(sdir + '/output/powerspecs/powerspec_000.txt', skiprows=5, max_rows=c0)[:,0]
+
+        c1   = int(np.loadtxt(sdir + '/output_c1/powerspecs/powerspec_000.txt', max_rows=2)[-1])
+        self.k_c1   = np.loadtxt(sdir + '/output_c1/powerspecs/powerspec_000.txt', skiprows=5, max_rows=c1)[:,0]
+
+        c2   = int(np.loadtxt(sdir + '/output_c2/powerspecs/powerspec_000.txt', max_rows=2)[-1])
+        self.k_c2   = np.loadtxt(sdir + '/output_c2/powerspecs/powerspec_000.txt', skiprows=5, max_rows=c2)[:,0]
+
+        #self.k_c3   = np.loadtxt(sdir + '/output_c3/powerspecs/powerspec_000.txt', max_rows=2)[-1]
+        #self.k_c4   = np.loadtxt(sdir + '/output_c4/powerspecs/powerspec_000.txt', max_rows=2)[-1]
+
+        # Multifluid 
         self.Ntau = 20
         self.Nf = len([f for f in glob.iglob(sdir +'/output/snapshot_*', recursive=True)])
         self.vlist  = np.loadtxt(sdir+'/vel_list_full.txt')
-        if verbose:
-            print('Found %d spectra to analyse'%self.Nf)
 
-        # Multifluid 
         de_dir = self.mf_dir + '/neutrino_stream_data/neutrino_delta_stream_'
         th_dir = self.mf_dir + '/neutrino_stream_data/neutrino_theta_stream_'
 
@@ -76,24 +94,55 @@ class PowerSpectra:
         self.de_mf = de
         self.th_mf = th
 
-        # CB particles 
-
-    @property
+    # MF delta, theta, Delta^2
     def mf_delta_flow(self, snap, alpha):
         return self.de_mf[snap][:, alpha+1]
 
-    @property
     def mf_delta_flow0(self, alpha):
         return self.de_mf[-1][:, alpha+1]
 
-    @property
     def mf_theta_flow(self, snap, alpha):
         return self.th_mf[snap][:, alpha+1]
 
-    @property
     def mf_theta_flow0(self, alpha):
         return self.th_mf[-1][:, alpha+1]
 
+    def mf_De_flow(self, snap, alpha):
+        return self.k_mf**3/(2*np.pi**2)*self.mf_delta_flow(snap, alpha)**2
+
+    def mf_De_flow0(self, alpha):
+        return self.k_mf**3/(2*np.pi**2)*self.mf_delta_flow0(alpha)**2
+
+    # Particle type generic
+    def ptype_De(self, conv, snap, ptype, smooth=False):
+        if conv == 0:
+            ddir = self.mf_dir
+            f = np.loadtxt(ddir + '/powerspecs/powerspec_%.3d.txt'%snap, max_rows=5)
+            z = int(np.round(1/f[0]-1))
+            rows = int(f[1])
+            print('Type 1 (CDM) spectrum at z=%d'%z)
+            if smooth:
+                snapshot = Snap(self.sdir + '/output/snapshot_%.3d'%snap)
+                delta  = snapshot.get_delta(ptype, threads=THREADS, verbose=False)
+                Pk = PKL.Pk(delta, self.L, axis=0, MAS="CIC", threads=THREADS, verbose=False)
+                return Pk.k3D, Pk.Pk[:,0]*Pk.k3D**3/(2*np.pi**2)
+            else:
+                f = np.loadtxt(ddir + '/powerspecs/powerspec_%.3d.txt'%snap, skiprows=5, max_rows=rows)
+                return f[:,0], f[:,1]
+        else:
+            ddir = self.sdir + '/output_c%d'%conv
+            f = np.loadtxt(ddir + '/powerspecs/powerspec_type%d_%.3d.txt'%(ptype, snap), max_rows=5)
+            z = int(np.round(1/f[0]-1))
+            rows = int(f[1])
+            print('Type %d spectrum at z=%d'%(ptype,z))
+            if smooth:
+                snapshot = Snap(self.sdir + '/output_c%d/snapshot_%.3d'%(conv,snap))
+                delta  = snapshot.get_delta(ptype, threads=THREADS, verbose=False)
+                Pk = PKL.Pk(delta, self.L, axis=0, MAS="CIC", threads=THREADS, verbose=False)
+                return Pk.k3D, Pk.Pk[:,0]*Pk.k3D**3/(2*np.pi**2)
+            else:
+                f = np.loadtxt(ddir + '/powerspecs/powerspec_type%d_%.3d.txt'%(ptype, snap), skiprows=5, max_rows=rows)
+                return f[:,0], f[:,1]
 
 
 

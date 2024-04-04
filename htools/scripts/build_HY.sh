@@ -25,10 +25,8 @@ fi
 
 cp htools/param_restart_template.txt $1
 
-echo 'Compiling Gadget4 hybrid...'
+echo 'Compiling Gadget4 hybrid ...'
 make -j CONFIG=Config_hybrid_restart.sh EXEC=$1/Gadget4-hybrid-restart BUILD_DIR=$1/build_hy >> $1/info/compilation.txt 2> $1/info/issues.txt 
-
-echo 'Done!'
 
 sleep 1
 

@@ -1,48 +1,41 @@
 #!/bin/bash
 
-OPT=$1                           # 'start'           
-				 # 'restart'         (Hybris sims)
-                                 # 'postprocess'   
+OPT=$1                                        # 'start'           
+				              # 'restart'         (Hybris sims)
+                                              # 'postprocess'   
 
-OUTPUT=output                    # Output of simulation to consider 
+OUTPUT=output                                 # Output of simulation to consider 
 
-# Class ------------------------------------------------------------------------------------
+# Class ------------------------------------------------------------------------------------------ 
 
-COSMO_MODEL=be05                 # Cosmology model
-CLASS_RES=0                      # Class precision 0: Low, 1: High
+COSMO_MODEL=ax02                              # Cosmology model
+CLASS_RES=0                                   # Class precision 0: Low, 1: High
 
-# Multifluid -------------------------------------------------------------------------------
+# Multifluid ------------------------------------------------------------------------------------- 
 
-OUTPUT_Z="99 0"                  # Output redshifts for the MultiFluid run
+OUTPUT_Z="99 0"                               # Output redshifts for the MultiFluid run
 OUTPUT_NL=0
 OUTPUT_PRINT=2
 
-# N-body   ---------------------------------------------------------------------------------
+# N-body   --------------------------------------------------------------------------------------- 
 
-NPARTS=128                       # Number of CDM particles
-ZIN=99.0                         # Initial redshift in gadget
-BOXSIZE=128.0                    # BoxSize for gadget in Mpc/h
-SOFT=0.04                        # Softening length in units of BoxSize/NumParts^(1/3)
-OUTPUT_G="49 19 9 5 3 2 1 0"     # Gadget snapshot output redshifts 
-LR_HDM=2                         # Linear response type: 1 SE, 2 MF, 3 GSE
+NPARTS=512                                    # Number of CDM particles
+ZIN=99.0                                      # Initial redshift in gadget
+BOXSIZE=256.0                                 # BoxSize for gadget in Mpc/h
+SOFT=0.04                                     # Softening length in units of BoxSize/NumParts^(1/3)
+OUTPUT_G="49 39 29 19 9 3 1 0"                # Gadget snapshot output redshifts 
+LR_HDM=2                                      # Linear response type: 1 SE, 2 MF, 3 GSE
 
-# Hybrid restart --------------------------------------------------------------------------
+# Hybrid restart -------------------------------------------------------------------------------- 
 
 ROOT_IN=output
 ROOT_OUT=output_c1
-SNAP=0                           # Snapshot taken as IC
-CTYPE=1                          # Conversion particle type (after PTYPE=1)
-NSTREAMS=2			 # Number of streams converted as particles
-ISTREAM=1                        # First of the NSTREAMS to be converted, first overall is 1
+SNAP=0                                        # Snapshot taken as IC
+CTYPE=1                                       # Conversion particle type (after PTYPE=1)
+NSTREAMS=2			              # Number of streams converted as particles
+ISTREAM=1                                     # First of the NSTREAMS to be converted, first overall is 1
 
-# Post -------------------------------------------------------------------------------------
-
-#SNAP_BASE=snapshot               # Name of snapshot base 
-#SNAP=7                           # Snapshot number, format %03d
-#PTYPE=1                          # Particle type to analyse         
-#pindex=0                        # 0: Projection plot 
-                                 # 1: Power spectra (delta, velocity, momentum) per ptype
-                                 # 2: Neutrino combined spectr
+# Post ------------------------------------------------------------------------------------------- 
 
 ############################################################################################
  
