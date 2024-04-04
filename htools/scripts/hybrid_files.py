@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, csv
 import numpy as np
 
 root      = sys.argv[1]
@@ -32,8 +32,9 @@ def hyb_restart(root,snap,Nstreams,stream):
     '''
     '''
     proot = os.path.abspath(os.path.join(root, os.pardir))
-    ddelta = np.loadtxt(root+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%snap,delimiter=',',usecols=range(0,stream*Nstreams+1))
-    dtheta = np.loadtxt(root+'/neutrino_stream_data/neutrino_theta_stream_%.3d.csv'%snap,delimiter=',',usecols=range(0,stream*Nstreams+1))
+    ncols = len(open(root+'/neutrino_stream_data/neutrino_delta_stream_000.csv').readline().split(',')) - 1
+    ddelta = np.loadtxt(root+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%snap,delimiter=',',usecols=range(0,ncols))
+    dtheta = np.loadtxt(root+'/neutrino_stream_data/neutrino_theta_stream_%.3d.csv'%snap,delimiter=',',usecols=range(0,ncols))
     ps_cb = load_powerspec(root+'/powerspecs/powerspec_%.3d.txt'%snap)
 
     if Nstreams == 1:

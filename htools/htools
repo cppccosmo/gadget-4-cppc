@@ -110,7 +110,7 @@ case $OPT in
         PK_FILE=${OUTPUT_BASE}_z${SEL_RED}_Pk.txt
         THK_FILE=${OUTPUT_BASE}_z${SEL_RED}_f.txt
         COSMO_OL=$(echo 1 - $COSMO_OM | bc | awk '{printf("%.4f",$0)}')    
-        COSMO_OMM=$(echo $COSMO_OM - $COSMO_OH| bc | awk '{printf("%.4f",$0)}')    
+        COSMO_OMM=$(echo $COSMO_OM - $COSMO_OH | bc | awk '{printf("%.4f",$0)}')    
         AIN=$(echo $ZIN | awk '{print 1/(1+$1)}')
         SOFT_LENGTH=$(echo "scale=4; $SOFT*$BOXSIZE/$NPARTS" | bc -l)
 
@@ -147,6 +147,7 @@ case $OPT in
         SOFT_LENGTH=$(echo "scale=4; $SOFT*$BOXSIZE/$NPARTS" | bc -l)
         TOT_STREAMS=$(cat tau_table.txt | wc -l)
         COSMO_OL=$(echo 1 - $COSMO_OM | bc | awk '{printf("%.4f",$0)}')    
+        COSMO_OMM=$(echo $COSMO_OM - $COSMO_OH | bc | awk '{printf("%.4f",$0)}')    
         
         if [ ! -f "hdm_omega.txt" ]; then
             BUF=$(python3 scripts/hdm_budget.py 0 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
@@ -187,7 +188,7 @@ case $OPT in
         sed -e "s|TEMPLATE_P_ICFILE|${ICFILE}|g" \
             -e "s|TEMPLATE_P_OUTDIR|${ROOT_OUT}|g" \
             -e "s|TEMPLATE_P_ZIN|${NEWT}|g" \
-            -e "s|TEMPLATE_P_OM|${COSMO_OM}|g" \
+            -e "s|TEMPLATE_P_OM|${COSMO_OMM}|g" \
             -e "s|TEMPLATE_P_OL|${COSMO_OL}|g" \
             -e "s|TEMPLATE_P_OB|${COSMO_OB}|g" \
             -e "s|TEMPLATE_P_OH|${COSMO_OHL}|g" \
