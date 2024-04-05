@@ -212,6 +212,12 @@ case $OPT in
         sleep 1
         ;;
 
+    mf_restart)
+
+        # Add ynu to params of MFLR simulation
+        # ....
+        ;;
+
     postprocess)
     
         #mkdir -p postprocess

@@ -70,14 +70,28 @@ class PowerSpectra:
         c0   = int(np.loadtxt(sdir + '/output/powerspecs/powerspec_000.txt', max_rows=2)[-1])
         self.k_c0   = np.loadtxt(sdir + '/output/powerspecs/powerspec_000.txt', skiprows=5, max_rows=c0)[:,0]
 
-        c1   = int(np.loadtxt(sdir + '/output_c1/powerspecs/powerspec_000.txt', max_rows=2)[-1])
-        self.k_c1   = np.loadtxt(sdir + '/output_c1/powerspecs/powerspec_000.txt', skiprows=5, max_rows=c1)[:,0]
+        try:
+            c1   = int(np.loadtxt(sdir + '/output_c1/powerspecs/powerspec_000.txt', max_rows=2)[-1])
+            self.k_c1   = np.loadtxt(sdir + '/output_c1/powerspecs/powerspec_000.txt', skiprows=5, max_rows=c1)[:,0]
+        except:
+            print("Missing conversion c1")
+        try:
+            c2   = int(np.loadtxt(sdir + '/output_c2/powerspecs/powerspec_000.txt', max_rows=2)[-1])
+            self.k_c2   = np.loadtxt(sdir + '/output_c2/powerspecs/powerspec_000.txt', skiprows=5, max_rows=c2)[:,0]
+        except:
+            print("Missing conversion c2")
 
-        c2   = int(np.loadtxt(sdir + '/output_c2/powerspecs/powerspec_000.txt', max_rows=2)[-1])
-        self.k_c2   = np.loadtxt(sdir + '/output_c2/powerspecs/powerspec_000.txt', skiprows=5, max_rows=c2)[:,0]
+        try:
+            c3   = int(np.loadtxt(sdir + '/output_c3/powerspecs/powerspec_000.txt', max_rows=2)[-1])
+            self.k_c3   = np.loadtxt(sdir + '/output_c3/powerspecs/powerspec_000.txt', max_rows=2)[-1]
+        except:
+            print("Missing conversion c3")
 
-        #self.k_c3   = np.loadtxt(sdir + '/output_c3/powerspecs/powerspec_000.txt', max_rows=2)[-1]
-        #self.k_c4   = np.loadtxt(sdir + '/output_c4/powerspecs/powerspec_000.txt', max_rows=2)[-1]
+        try:
+            c4   = int(np.loadtxt(sdir + '/output_c4/powerspecs/powerspec_000.txt', max_rows=2)[-1])
+            self.k_c4   = np.loadtxt(sdir + '/output_c4/powerspecs/powerspec_000.txt', max_rows=2)[-1]
+        except:
+            print("Missing conversion c4")
 
         # Multifluid 
         self.Ntau = 20
@@ -113,6 +127,12 @@ class PowerSpectra:
     def mf_De_flow0(self, alpha):
         return self.k_mf**3/(2*np.pi**2)*self.mf_delta_flow0(alpha)**2
 
+    def mf_De_flow_i(self, snap, alpha):
+        return np.interp(self.k_c0, self.k_mf, self.mf_De_flow(snap, alpha))
+
+    def mf_De_flow0_i(self, alpha):
+        return np.interp(self.k_c0, self.k_mf, self.mf_De_flow0(alpha))
+
     # Particle type generic
     def ptype_De(self, conv, snap, ptype, smooth=False):
         if conv == 0:
@@ -143,8 +163,6 @@ class PowerSpectra:
             else:
                 f = np.loadtxt(ddir + '/powerspecs/powerspec_type%d_%.3d.txt'%(ptype, snap), skiprows=5, max_rows=rows)
                 return f[:,0], f[:,1]
-
-
 
 
 
