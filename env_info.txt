@@ -1,0 +1,6 @@
+## Use python3 with version < 3.12
+
+mkdir -p ~/.venvs
+python3 -m venv ~/.venvs/hybrid
+source ~/.venvs/hybrid/bin/activate
+pip install Pylians numpy h5py matpotlib cmasher 
