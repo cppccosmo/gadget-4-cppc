@@ -15,7 +15,7 @@ class Snap():
         self.z = self.f['Header'].attrs['Redshift']
         self.a = self.f['Header'].attrs['Time']
         self.L = self.f['Header'].attrs['BoxSize']
-        self.grid  = self.f['Parameters'].attrs['GridSize']
+        self.grid = int(self.f['Config'].attrs['PMGRID'])
 
     @property
     def redshift(self):
@@ -31,20 +31,15 @@ class Snap():
         absv = np.sqrt(vels[:,0]**2+vels[:,1]**2+vels[:,2]**2)
         return absv*self.a**(3/2)
 
-    def get_delta(self, ptype, axis=0, threads=4, verbose=True):
+    def get_delta(self, ptype, grid=512, axis=0, threads=THREADS, verbose=True):
         ptypes    = [ptype]
         MAS       = 'CIC'
         verbose   = verbose
         threads   = threads
-        delta     = MASL.density_field_gadget(self.fname, ptypes, self.grid, MAS, do_RSD=False, axis=axis, verbose=verbose)
-        return delta
+        delta     = MASL.density_field_gadget(self.fname, ptypes, grid, MAS, do_RSD=False, axis=axis, verbose=verbose)
+        return delta/np.mean(delta)
 
-    def projection(self, ptype, axis=0, threads=4, verbose=False, vmin=-1,vmax=2):
-        #ptypes    = [ptype]
-        #MAS       = 'CIC'
-        #verbose   = verbose
-        #threads   = threads
-        #delta     = MASL.density_field_gadget(self.fname, ptypes, self.grid, MAS, do_RSD=False, axis=axis, verbose=verbose)
+    def projection(self, ptype, axis=0, threads=4, verbose=False, vmin=-1,vmax=3):
         delta = self.get_delta(ptype, axis=axis, threads=threads, verbose=verbose)
         fig,ax = plt.subplots(1,1,figsize=(13,12))
         im = ax.imshow(np.log10(np.mean(delta,axis=axis)),
@@ -134,7 +129,7 @@ class PowerSpectra:
         return np.interp(self.k_c0, self.k_mf, self.mf_De_flow0(alpha))
 
     # Particle type generic
-    def ptype_De(self, conv, snap, ptype, smooth=False):
+    def ptype_De(self, conv, snap, ptype, smooth=False, grid=1024):
         if conv == 0:
             ddir = self.mf_dir
             f = np.loadtxt(ddir + '/powerspecs/powerspec_%.3d.txt'%snap, max_rows=5)
@@ -143,12 +138,12 @@ class PowerSpectra:
             print('Type 1 (CDM) spectrum at z=%d'%z)
             if smooth:
                 snapshot = Snap(self.sdir + '/output/snapshot_%.3d'%snap)
-                delta  = snapshot.get_delta(ptype, threads=THREADS, verbose=False)
+                delta  = snapshot.get_delta(ptype, grid=grid, threads=THREADS, verbose=False)
                 Pk = PKL.Pk(delta, self.L, axis=0, MAS="CIC", threads=THREADS, verbose=False)
-                return Pk.k3D, Pk.Pk[:,0]*Pk.k3D**3/(2*np.pi**2)
+                return Pk.k3D, Pk.Pk[:,0]*Pk.k3D**3/(2*np.pi**2), np.sqrt(Pk.Pk[:,0])
             else:
                 f = np.loadtxt(ddir + '/powerspecs/powerspec_%.3d.txt'%snap, skiprows=5, max_rows=rows)
-                return f[:,0], f[:,1]
+                return f[:,0], f[:,1], f[:,2]
         else:
             ddir = self.sdir + '/output_c%d'%conv
             f = np.loadtxt(ddir + '/powerspecs/powerspec_type%d_%.3d.txt'%(ptype, snap), max_rows=5)
@@ -157,12 +152,12 @@ class PowerSpectra:
             print('Type %d spectrum at z=%d'%(ptype,z))
             if smooth:
                 snapshot = Snap(self.sdir + '/output_c%d/snapshot_%.3d'%(conv,snap))
-                delta  = snapshot.get_delta(ptype, threads=THREADS, verbose=False)
+                delta  = snapshot.get_delta(ptype, grid=grid, threads=THREADS, verbose=False)
                 Pk = PKL.Pk(delta, self.L, axis=0, MAS="CIC", threads=THREADS, verbose=False)
-                return Pk.k3D, Pk.Pk[:,0]*Pk.k3D**3/(2*np.pi**2)
+                return Pk.k3D, Pk.Pk[:,0]*Pk.k3D**3/(2*np.pi**2), np.sqrt(Pk.Pk[:,0])
             else:
                 f = np.loadtxt(ddir + '/powerspecs/powerspec_type%d_%.3d.txt'%(ptype, snap), skiprows=5, max_rows=rows)
-                return f[:,0], f[:,1]
+                return f[:,0], f[:,1], f[:,2]
 
 
 

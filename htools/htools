@@ -1,10 +1,6 @@
 #!/bin/bash
 
-OPT=$1                                        # 'start'           
-				              # 'restart'         (Hybris sims)
-                                              # 'postprocess'   
-
-OUTPUT=output                                 # Output of simulation to consider 
+OPT=$1                                        # 'start', 'restart', 'mf_restart', 'postprocess'   
 
 # Class ------------------------------------------------------------------------------------------ 
 
@@ -36,6 +32,11 @@ NSTREAMS=2			              # Number of streams converted as particles
 ISTREAM=1                                     # First of the NSTREAMS to be converted, first overall is 1
 
 # Post ------------------------------------------------------------------------------------------- 
+
+DIR=run_512/ax2_0                             # Simulation directory to analyse
+NCONV=4                                       # Number of conversions to consider
+DEG=4                                         # Flow degeneracy (upgrade to list at some point)
+SNAP0="7 5 4 1"                               # Snapshots with z=0 (to be automated)
 
 ############################################################################################
  
@@ -220,10 +221,12 @@ case $OPT in
 
     postprocess)
     
-        #mkdir -p postprocess
-        #mkdir -p postprocess/plots postprocess/spectra #postprocess/render
+        mkdir -p postprocess
+        mkdir -p postprocess/plots postprocess/spectra #postprocess/render
 
-        #echo 'Post-processing simulation from folder' $SIMFOLDER
+        echo 'Post-processing simulations from folder' $DIR
+
+        python3 scripts/post.py $DIR $NCONV $DEG $SNAP0
         #SNAPSHOT=$(printf "%03d" $SNAP)
         #echo "File: ${SNAP_BASE}_${SNAPSHOT}.hdf5"
         #python3 scripts/post.py $SIMFOLDER ${SNAP_BASE}_${SNAPSHOT} $PTYPE

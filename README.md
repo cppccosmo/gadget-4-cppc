@@ -47,8 +47,11 @@ git clone https://github.com/cppccosmo/gadget-4-cppc.git; cd gadget-4-cppc
 ```
 Then to start a simulation folder choose between Linear Response (LR), Multifluid (MF) or Hybrid (HYB) and run  
 ```
-bash hsetup.sh <LR/MF/HYB> /path/to/sim/folder
+bash hsetup.sh /path/to/sim/folder <system>
 ```
-
+An example is
+```
+bash hsetup.sh /tests/hybrid_sim gadi
+```
 
 
