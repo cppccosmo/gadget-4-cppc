@@ -32,7 +32,7 @@ class Snap():
         return absv*self.a**(3/2)
 
     def get_delta(self, ptype, grid=512, axis=0, threads=THREADS, verbose=True):
-        ptypes    = [ptype]
+        ptypes    = ptype
         MAS       = 'CIC'
         verbose   = verbose
         threads   = threads
@@ -138,7 +138,7 @@ class PowerSpectra:
             print('Type 1 (CDM) spectrum at z=%d'%z)
             if smooth:
                 snapshot = Snap(self.sdir + '/output/snapshot_%.3d'%snap)
-                delta  = snapshot.get_delta(ptype, grid=grid, threads=THREADS, verbose=False)
+                delta  = snapshot.get_delta([ptype], grid=grid, threads=THREADS, verbose=False)
                 Pk = PKL.Pk(delta, self.L, axis=0, MAS="CIC", threads=THREADS, verbose=False)
                 return Pk.k3D, Pk.Pk[:,0]*Pk.k3D**3/(2*np.pi**2), np.sqrt(Pk.Pk[:,0])
             else:
@@ -152,7 +152,7 @@ class PowerSpectra:
             print('Type %d spectrum at z=%d'%(ptype,z))
             if smooth:
                 snapshot = Snap(self.sdir + '/output_c%d/snapshot_%.3d'%(conv,snap))
-                delta  = snapshot.get_delta(ptype, grid=grid, threads=THREADS, verbose=False)
+                delta  = snapshot.get_delta([ptype], grid=grid, threads=THREADS, verbose=False)
                 Pk = PKL.Pk(delta, self.L, axis=0, MAS="CIC", threads=THREADS, verbose=False)
                 return Pk.k3D, Pk.Pk[:,0]*Pk.k3D**3/(2*np.pi**2), np.sqrt(Pk.Pk[:,0])
             else:

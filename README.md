@@ -3,7 +3,7 @@
 GADGET-4-CPPC
 ========
 
-![](documentation/img/top.jpg)
+![](documentation/cover.png)
 
 GADGET-4-CPPC is an N-body code to study neutrinos and any hot dark matter 
 with linear response, multifluid and hybrid methods. It is based on the code 
