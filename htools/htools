@@ -30,13 +30,17 @@ SNAP=0                                        # Snapshot taken as IC
 CTYPE=1                                       # Conversion particle type (after PTYPE=1)
 NSTREAMS=2			              # Number of streams converted as particles
 ISTREAM=1                                     # First of the NSTREAMS to be converted, first overall is 1
+MULTI=0                                       # Multiple conversions,  0: no, 1: yes
 
 # Post ------------------------------------------------------------------------------------------- 
 
 DIR=run_512/ax2_0                             # Simulation directory to analyse
-NCONV=4                                       # Number of conversions to consider
-DEG=4                                         # Flow degeneracy (upgrade to list at some point)
-SNAP0="7 5 4 1"                               # Snapshots with z=0 (to be automated)
+PP=0                                          # Option:
+                                              # 0: Save smoothed+raw particle spectra at z=0
+
+#NCONV=4                                       # Number of conversions to consider
+#DEG=4                                         # Flow degeneracy (upgrade to list at some point)
+#SNAP0="7 5 4 1"                               # Snapshots with z=0 (to be automated)
 
 ############################################################################################
  
@@ -150,6 +154,13 @@ case $OPT in
         COSMO_OL=$(echo 1 - $COSMO_OM | bc | awk '{printf("%.4f",$0)}')    
         COSMO_OMM=$(echo $COSMO_OM - $COSMO_OH | bc | awk '{printf("%.4f",$0)}')    
         
+        AFI=1
+        #if [[ $MULTI == 1 ]]; then
+        #    NTYPES=$(h5dump -a Config/NTYPES output/snapshot_000.hdf5 | awk -F':' {'print $2'})
+        #    TOTCONV=$($NTYPES - 2 | bc)
+        #    AFI=
+        #fi
+         
         if [ ! -f "hdm_omega.txt" ]; then
             BUF=$(python3 scripts/hdm_budget.py 0 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
             COSMO_OHL=$(echo $BUF | awk '{print $1}')
@@ -168,8 +179,8 @@ case $OPT in
         
         MIN=$ISTREAM
         MAX=$(echo $NSTREAMS+$ISTREAM-1 | bc)
-        cat vel_list_full.txt | awk -v m=$MIN -v M=$MAX 'NR >=m && NR <=M {print}' > vel_list.txt
-        VLIST_FILE=vel_list.txt
+        cat vel_list_full.txt | awk -v m=$MIN -v M=$MAX 'NR >=m && NR <=M {print}' > vel_list_$CTYPE.txt
+        VLIST_FILE=vel_list_$CTYPE.txt
         
         CONVN=$(printf "%03d" $CTYPE)
         python3 scripts/hybrid_files.py $ROOT_IN $SNAP $NSTREAMS $ISTREAM $CTYPE
@@ -189,6 +200,7 @@ case $OPT in
         sed -e "s|TEMPLATE_P_ICFILE|${ICFILE}|g" \
             -e "s|TEMPLATE_P_OUTDIR|${ROOT_OUT}|g" \
             -e "s|TEMPLATE_P_ZIN|${NEWT}|g" \
+            -e "s|TEMPLATE_P_ZFI|${AFI}|g" \
             -e "s|TEMPLATE_P_OM|${COSMO_OMM}|g" \
             -e "s|TEMPLATE_P_OL|${COSMO_OL}|g" \
             -e "s|TEMPLATE_P_OB|${COSMO_OB}|g" \
@@ -222,11 +234,11 @@ case $OPT in
     postprocess)
     
         mkdir -p postprocess
-        mkdir -p postprocess/plots postprocess/spectra #postprocess/render
+        mkdir -p postprocess/plots 
 
         echo 'Post-processing simulations from folder' $DIR
 
-        python3 scripts/post.py $DIR $NCONV $DEG $SNAP0
+        python3 scripts/post.py $PP $DIR 
         #SNAPSHOT=$(printf "%03d" $SNAP)
         #echo "File: ${SNAP_BASE}_${SNAPSHOT}.hdf5"
         #python3 scripts/post.py $SIMFOLDER ${SNAP_BASE}_${SNAPSHOT} $PTYPE

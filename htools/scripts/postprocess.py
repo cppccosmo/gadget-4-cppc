@@ -55,6 +55,7 @@ class PowerSpectra:
     def __init__(self, sdir):
         self.sdir   = sdir
         self.mf_dir = sdir + '/output'
+        self.gs_dir = sdir + '/output_gse'
         self.c1_dir = sdir + '/output_c1'
         self.c2_dir = sdir + '/output_c2'
         self.c3_dir = sdir + '/output_c3'
@@ -102,6 +103,8 @@ class PowerSpectra:
         self.k_mf = de[0][:,0]
         self.de_mf = de
         self.th_mf = th
+        self.De_mf  = np.mean([self.mf_De_flow0(i) for i in range(self.Ntau)],axis=0)
+        self.De_mf_i  = np.mean([self.mf_De_flow0_i(i) for i in range(self.Ntau)],axis=0)
 
     # MF delta, theta, Delta^2
     def mf_delta_flow(self, snap, alpha):
@@ -129,8 +132,11 @@ class PowerSpectra:
         return np.interp(self.k_c0, self.k_mf, self.mf_De_flow0(alpha))
 
     # Particle type generic
-    def ptype_De(self, conv, snap, ptype, smooth=False, grid=1024):
+    def ptype_De(self, conv, snap, ptype, smooth=False, grid=1024, gse=False):
         if conv == 0:
+            if gse:
+                print("GSE spectrum")
+                ddir = self.gs_dir
             ddir = self.mf_dir
             f = np.loadtxt(ddir + '/powerspecs/powerspec_%.3d.txt'%snap, max_rows=5)
             z = int(np.round(1/f[0]-1))
@@ -158,6 +164,10 @@ class PowerSpectra:
             else:
                 f = np.loadtxt(ddir + '/powerspecs/powerspec_type%d_%.3d.txt'%(ptype, snap), skiprows=5, max_rows=rows)
                 return f[:,0], f[:,1], f[:,2]
+
+    def De_hdm_hy(self, deg_list):
+        pass
+
 
 
 

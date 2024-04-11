@@ -19,7 +19,7 @@ MaxMemSize                1900     % MByte
 
 %---- Caracteristics of run
 TimeBegin                 TEMPLATE_P_ZIN 
-TimeMax	                  1.0     
+TimeMax	                  TEMPLATE_P_ZFI     
 
 %---- Basic code options that set the type of simulation
 ComovingIntegrationOn     1 
