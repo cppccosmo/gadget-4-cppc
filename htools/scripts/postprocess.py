@@ -169,7 +169,17 @@ class PowerSpectra:
         pass
 
 
-
+    def P_hdm(self, deg_list):
+        Nco = len(deg_list)
+        fu = 0
+        for i in range(Nco):
+            fu += deg_list[i]
+        p_hy = np.mean([np.loadtxt(self.sdir+'/postprocess/ps_hy_type%d_raw.txt'%(i+2)) for i in range(4)],axis=0)
+        k    = p_hy[:,0] # Normalise to raw spectrum k
+        conv = p_hy[:,1] # Dimensionless Delta^2
+        unc_raw = np.mean([self.mf_De_flow0(j) for j in range(fu, self.Ntau)],axis=0)
+        unc  = np.interp(k, self.k_mf, unc_raw)
+        return np.average(np.array([conv,unc]), axis=0, weights=[fu,self.Ntau-fu])
 
 
 

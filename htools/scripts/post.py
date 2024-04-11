@@ -56,7 +56,7 @@ def plot_something():
 
 if __name__ == "__main__":
     if opt == 0:
-        dump_spectra(grid=128)
+        dump_spectra()
     #compute_deltas()
     #save_smoothed_spectra()
 
