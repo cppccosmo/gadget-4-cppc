@@ -28,8 +28,8 @@ def dump_spectra(grid=1024):
     snap = int(np.sort([f for f in glob.iglob(output_mf+'/snapshot_*', recursive=True)])[-1].split(".")[0][-1])
     mf_x1, mf_y1, mf_z1 = PS.ptype_De(0, snap, 1)
     mf_x2, mf_y2, mf_z2 = PS.ptype_De(0, snap, 1, smooth=True, grid=grid)
-    np.savetxt(pp_dir+"/ps_mf_type1.txt", np.column_stack([mf_x1,mf_y1,mf_z1]))
-    np.savetxt(pp_dir+"/ps_mf_type1_raw.txt", np.column_stack([mf_x2,mf_y2,mf_z2]))
+    np.savetxt(pp_dir+"/ps_mf_type1_raw.txt", np.column_stack([mf_x1,mf_y1,mf_z1]))
+    np.savetxt(pp_dir+"/ps_mf_type1.txt", np.column_stack([mf_x2,mf_y2,mf_z2]))
 
     # GSE
     snap = int(np.sort([f for f in glob.iglob(output_gse+'/snapshot_*', recursive=True)])[-1].split(".")[0][-1])

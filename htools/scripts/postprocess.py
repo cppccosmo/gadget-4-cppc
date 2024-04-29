@@ -177,9 +177,58 @@ class PowerSpectra:
         p_hy = np.mean([np.loadtxt(self.sdir+'/postprocess/ps_hy_type%d_raw.txt'%(i+2)) for i in range(4)],axis=0)
         k    = p_hy[:,0] # Normalise to raw spectrum k
         conv = p_hy[:,1] # Dimensionless Delta^2
-        unc_raw = np.mean([self.mf_De_flow0(j) for j in range(fu, self.Ntau)],axis=0)
-        unc  = np.interp(k, self.k_mf, unc_raw)
-        return np.average(np.array([conv,unc]), axis=0, weights=[fu,self.Ntau-fu])
+        if fu == self.Ntau:
+            res = conv
+        else:
+            unc_raw = np.mean([self.mf_De_flow0(j) for j in range(fu, self.Ntau)],axis=0)
+            unc  = np.interp(k, self.k_mf, unc_raw)
+            res = np.average(np.array([conv,unc]), axis=0, weights=[fu,self.Ntau-fu])
+        return res
+
+
+def MF_cb(ddir):
+    PS = PowerSpectra(ddir)
+    f = np.sort([f for f in glob.iglob(ddir+'/output/powerspecs/powerspec_*.txt', recursive=True)])[-1]
+    max_rows = int(np.loadtxt(f, max_rows=2)[1])
+    f_mf_cb = np.loadtxt(f, skiprows=5, max_rows=max_rows)
+    return f_mf_cb[:,0], f_mf_cb[:,1]
+
+def HY_cb(ddir):
+    PS = PowerSpectra(ddir)
+    fo = np.sort([f for f in glob.iglob(ddir+'/output_c*', recursive=True)])[-1]
+    snap = int(np.sort([f for f in glob.iglob(fo+'/powerspecs/powerspec_type1_*.txt', recursive=True)])[-1].split(".")[0][-1])
+    max_rows = int(np.loadtxt(fo+'/powerspecs/powerspec_type1_%.3d.txt'%snap, max_rows=2)[1])
+    f_hy_cb = np.loadtxt(fo+'/powerspecs/powerspec_type1_%.3d.txt'%snap,skiprows=5,max_rows=max_rows)
+    return f_hy_cb[:,0], f_hy_cb[:,1]
+
+def MF_m(ddir, omega_cb, omega_hdm, Ntau=20):
+    PS = PowerSpectra(ddir)
+    f_mf_cb = np.sort([f for f in glob.iglob(ddir+'/output/powerspecs/powerspec_*.txt', recursive=True)])[-1]
+    max_rows = int(np.loadtxt(f_mf_cb, max_rows=2)[1])
+    mf_cb = np.loadtxt(f_mf_cb,skiprows=5,max_rows=max_rows)
+    snap_mf = int(np.sort([f for f in glob.iglob(ddir+'/output/powerspecs/powerspec_*.txt', recursive=True)])[-1].split(".")[0][-1])
+    k = mf_cb[:,0]
+    mf_De_cb = mf_cb[:,1]
+    mf_De_hdm = np.interp(k, PS.k_mf, np.mean([PS.mf_De_flow(snap_mf, l) for l in range(Ntau)], axis=0))
+    de = np.average(np.array([mf_De_cb, mf_De_hdm]), axis=0, weights=[omega_cb, omega_hdm])
+    return k, de
+
+def HY_m(ddir, omega_cb, omega_hdm, fu, Ntau=20):
+    PS = PowerSpectra(ddir)
+    k = PS.k_c0
+    fo = np.sort([f for f in glob.iglob(ddir+'/output_c*', recursive=True)])[-1]
+    fon = int(fo[-1])
+    snap = int(np.sort([f for f in glob.iglob(fo+'/powerspecs/powerspec_type1_*.txt', recursive=True)])[-1].split(".")[0][-1])
+    snap_mf = int(np.sort([f for f in glob.iglob(ddir+'/output/powerspecs/powerspec_*.txt', recursive=True)])[-1].split(".")[0][-1])
+    max_rows = int(np.loadtxt(fo+'/powerspecs/powerspec_type1_%.3d.txt'%snap, max_rows=2)[1])
+    hy_De_cb = np.loadtxt(fo+'/powerspecs/powerspec_type1_%.3d.txt'%snap,skiprows=5,max_rows=max_rows)[:,1]
+    hy_De_hdm_p = np.mean([PS.ptype_De(fon, snap, i+2) for i in range(fon)], axis=0)[1]
+    if fu == Ntau:
+        hy_De_m     = np.average(np.array([hy_De_cb, hy_De_hdm_p]), axis=0, weights=[omega_cb, omega_hdm])
+    else:
+        hy_De_hdm_l = np.interp(k, PS.k_mf, np.mean([PS.mf_De_flow(snap_mf, l) for l in range(fu, Ntau)], axis=0))
+        hy_De_m     = np.average(np.array([hy_De_cb, hy_De_hdm_p, hy_De_hdm_l]), axis=0, weights=[omega_cb, omega_hdm*fu/Ntau, omega_hdm*(1-fu/Ntau)])
+    return k, hy_De_m
 
 
 

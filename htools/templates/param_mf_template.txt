@@ -28,7 +28,7 @@ ComovingIntegrationOn     1
 Omega0                    TEMPLATE_P_OM
 OmegaLambda               TEMPLATE_P_OL
 OmegaBaryon               TEMPLATE_P_OB
-OmegaNuPart               0.0 
+OmegaNuPart               TEMPLATE_P_OP 
 OmegaNuLin                TEMPLATE_P_OH     
 HubbleParam               TEMPLATE_P_H0
 Hubble                    100.0
@@ -97,21 +97,6 @@ SofteningClassOfPartType5    5
 ArtBulkViscConst             1.0
 MinEgySpec                   0
 InitGasTemp                  0
-
-
-%----- N-GenIC
-NSample                                           TEMPLATE_P_NUMPARTS 
-GridSize                                          TEMPLATE_P_NUMPARTS 
-Seed                                              2827492
-SphereMode                                        1
-PowerSpectrumType                                 2
-ReNormalizeInputSpectrum                          0
-PrimordialIndex                                   1.0   
-ShapeGamma                                        0.21
-Sigma8                                            0.8
-PowerSpectrumFile                                 TEMPLATE_POWERSPECTRUM
-GrowthRateFile                                    TEMPLATE_GROWTHRATE
-InputSpectrum_UnitLength_in_cm                    3.085678e24
 
 %----- MF 
 ynuFile                                           TEMPLATE_YNU

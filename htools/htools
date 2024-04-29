@@ -18,7 +18,7 @@ OUTPUT_PRINT=2
 NPARTS=512                                    # Number of CDM particles
 ZIN=99.0                                      # Initial redshift in gadget
 BOXSIZE=256.0                                 # BoxSize for gadget in Mpc/h
-SOFT=0.04                                     # Softening length in units of BoxSize/NumParts^(1/3)
+SOFT=0.04                                     # Softening length in units of BoxSize/Ngrid
 OUTPUT_G="49 39 29 19 9 3 1 0"                # Gadget snapshot output redshifts 
 LR_HDM=2                                      # Linear response type: 1 SE, 2 MF, 3 GSE
 
@@ -28,7 +28,7 @@ ROOT_IN=output
 ROOT_OUT=output_c1
 SNAP=0                                        # Snapshot taken as IC
 CTYPE=1                                       # Conversion particle type (after PTYPE=1)
-NSTREAMS=2			              # Number of streams converted as particles
+NSTREAMS=4			              # Number of streams converted as particles
 ISTREAM=1                                     # First of the NSTREAMS to be converted, first overall is 1
 MULTI=0                                       # Multiple conversions,  0: no, 1: yes
 
@@ -155,11 +155,11 @@ case $OPT in
         COSMO_OMM=$(echo $COSMO_OM - $COSMO_OH | bc | awk '{printf("%.4f",$0)}')    
         
         AFI=1
-        #if [[ $MULTI == 1 ]]; then
-        #    NTYPES=$(h5dump -a Config/NTYPES output/snapshot_000.hdf5 | awk -F':' {'print $2'})
-        #    TOTCONV=$($NTYPES - 2 | bc)
-        #    AFI=
-        #fi
+        if [[ $MULTI == 1 ]]; then
+            #NTYPES=$(h5dump -a Config/NTYPES output/snapshot_000.hdf5 | awk -F':' {'print $2'})
+            #TOTCONV=$(( $NTYPES - 2 | bc))
+            AFI=$(echo $OUTPUT_G | awk -v j=$(echo $CTYPE + 1 | bc) '{print $j}' | awk '{printf("%.6f\n", 1/(1+$1))}')
+        fi
          
         if [ ! -f "hdm_omega.txt" ]; then
             BUF=$(python3 scripts/hdm_budget.py 0 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)

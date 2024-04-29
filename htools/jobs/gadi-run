@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #PBS -P xu32
-#PBS -q normalsr
+#PBS -q normal
 
-#PBS -l walltime=24:00:00
+#PBS -l walltime=12:00:00
 #PBS -l storage=scratch/xu32
 
 #PBS -l mem=1500gb
-#PBS -l ncpus=2080
+#PBS -l ncpus=672
 #PBS -l wd
 
 #PBS -M g.pierobon@unsw.edu.au
@@ -17,4 +17,5 @@
 source scripts/load_modules.sh gadi
 
 mpirun -np $PBS_NCPUS ./Gadget4 param.txt | tee log.txt
-#mpirun -np $PBS_NCPUS ./Gadget4-hybrid-restart param.txt | tee log_hybrid_restart.txt
+#mpirun -np $NCPUS ./Gadget4-mf-restart param_mf.txt | tee log_mf_restart.txt
+#mpirun -np $PBS_NCPUS ./Gadget4-hybrid-restart param_restart.txt | tee log_hybrid_restart.txt
