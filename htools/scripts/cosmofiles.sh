@@ -23,7 +23,6 @@ esac
 
 echo 'Adjusting class_template.ini with the cosmology selected'
 sed -e s/TEMPLATE_CLASS_H0/${COSMO_H0}/g \
-	-e s/TEMPLATE_CLASS_TAU/${COSMO_TAU}/g \
 	-e s/TEMPLATE_CLASS_TCMBK/${COSMO_TCMBK}/g \
 	-e s/TEMPLATE_CLASS_OB/${COSMO_OB}/g \
 	-e s/TEMPLATE_CLASS_OC/${DERIV_COSMO_OC}/g \
@@ -31,9 +30,10 @@ sed -e s/TEMPLATE_CLASS_H0/${COSMO_H0}/g \
 	-e s/TEMPLATE_CLASS_OH/${COSMO_OH}/g \
 	-e s/TEMPLATE_CLASS_THDM_TCMB/${DERIV_COSMO_THDM_TCMB}/g \
 	-e s/TEMPLATE_CLASS_M_HDM/${COSMO_MHDM}/g \
+	-e s/TEMPLATE_CLASS_NUR/${COSMO_NUR}/g \
+	-e s/TEMPLATE_CLASS_DEGH/${COSMO_DEG}/g \
 	-e s/TEMPLATE_CLASS_W0/${COSMO_W0}/g \
 	-e s/TEMPLATE_CLASS_WA/${COSMO_WA}/g \
-	-e s/TEMPLATE_CLASS_SIG8/${COSMO_SIG8}/g \
 	-e s/TEMPLATE_CLASS_NS/${COSMO_NS}/g \
 	${CLASS_TEMPLATE} > input_class_${COSMO_MODEL}.ini
 echo 'Created file' class_${COSMO_MODEL}.ini

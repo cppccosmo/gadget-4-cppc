@@ -15,3 +15,5 @@ htools/class_template.ini
 htools/nu.ini
 htools/scripts/deprecated
 htools/scripts/__pycache__/
+
+tests/

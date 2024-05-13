@@ -67,7 +67,7 @@ CONFIG = $(DIR)/Config.sh
 BUILD_DIR = $(DIR)/build
 else
 EXEC   = Gadget4
-CONFIG   = Template-Config.sh
+CONFIG   = Config.sh
 BUILD_DIR = build
 endif
 
