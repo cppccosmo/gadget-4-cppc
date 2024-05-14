@@ -21,7 +21,7 @@ cp load_modules.sh $1/scripts
 cp htools/templates/param_template.txt $1
 cp htools/templates/class_template_LR.ini $1 
 cp htools/templates/class_template_HR.ini $1 
-cp MF/distribution_functions/* $1/psd
+cp MultiFluid/distribution_functions/* $1/psd
 
 case $2 in
     katana)
@@ -38,7 +38,7 @@ echo 'Compiling MuFLR ...'
 
 cd $MuFLRPath
 make > $1/info/compilation.txt
-cp MuFLR $1; cd $cdir
+cp MF $1; cd $cdir
 echo 'Done!'
 echo ''
 
@@ -60,9 +60,9 @@ make -j CONFIG=Config.sh EXEC=$1/Gadget4 BUILD_DIR=$1/build >> $1/info/compilati
 
 sleep 1
 
-NK=$(grep "#define NK " MF/AU_fftgrid.h | awk '{print $3}' | sed 's/(//' | sed 's/)//')
-N_TAU=$(grep "const int N_tau = " MF/AU_cosmofunc.h | sed -e s/"const int N_tau = "//g -e s/";.*$"//g)
-N_MU=$(grep "const int N_mu = " MF/AU_cosmofunc.h | sed -e s/"const int N_mu = "//g -e s/";.*$"//g)
+NK=$(grep "#define NK " MultiFluid/utils/ftgrid.h | awk '{print $3}' | sed 's/(//' | sed 's/)//')
+N_TAU=$(grep "const int N_tau = " MultiFluid/utils/cosmofunc.h | sed -e s/"const int N_tau = "//g -e s/";.*$"//g)
+N_MU=$(grep "const int N_mu = " MultiFluid/utils/cosmofunc.h | sed -e s/"const int N_mu = "//g -e s/";.*$"//g)
 echo 'Compilation options'     > $1/info/log.txt
 echo ''                       >> $1/info/log.txt
 echo 'NK    = ' $NK           >> $1/info/log.txt

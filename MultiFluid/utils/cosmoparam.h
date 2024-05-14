@@ -22,10 +22,11 @@
 #define COSMOPARAM_MAX_REDSHIFTS (1000)
 #define COSMOPARAM_MAX_CHAR_LEN (1000)
 #define COSMOPARAM_NU_EFF (3.044)
-#define COSMOPARAM_NU_MASSIVE (0.0)
-#define COSMOPARAM_TAU_MAX_Q (100000)
+#define COSMOPARAM_NU_MASSIVE (3.044)
+#define COSMOPARAM_MAX_NQ_NTAU (10000)
+#define COSMOPARAM_MAX_N_TAU (1000)
 
-const int COSMOPARAM_DEBUG_INIT = 1;
+const int COSMOPARAM_DEBUG_INIT = 3;
 
 struct cosmoparam{
 
@@ -43,8 +44,8 @@ struct cosmoparam{
   //code switches: 0 or 1
   int switch_nonlinear;
   int switch_1loop;
-  int switch_print_linear;
-  int switch_print_rsd;
+  int switch_print;
+  int switch_transfer_type;
 
   //inputs and outputs
   double z_nonlinear_initial;
@@ -62,10 +63,10 @@ struct cosmoparam{
 
   //fixed or derived parameters
   double Omega_cb_0;
-  double Omega_hdm_t_0;
+  double Omega_hdm_t_0[COSMOPARAM_MAX_N_TAU];
   double Omega_gam_0;
-  double Omega_hdmrel_0;
-  double Omega_hdmgam_0;
+  double Omega_nurel_0;
+  double Omega_nugam_0;
   double Omega_rel_0;
   double Omega_de_0;
   double Omega_m_h2_0;
@@ -75,7 +76,7 @@ struct cosmoparam{
   double N_nu_eff;
   double N_nu_massive;
   double f_cb_0;
-  double f_hdm_0;
+  double f_hdm_0[COSMOPARAM_MAX_N_TAU];
   
   double w_eos_cdm;
   double w_eos_gam;
@@ -96,9 +97,9 @@ int print_cosmoparam(const struct cosmoparam C, int verbosity){
   }
 
   if(verbosity > 1){
-    printf("#cosmoparam: switch_nonlinear=%i, switch_1loop=%i, switch_print_linear=%i, switch_print_rsd=%i\n",
-      C.switch_nonlinear, C.switch_1loop, C.switch_print_linear, 
-      C.switch_print_rsd);
+    printf("#cosmoparam: switch_nonlinear=%i, switch_1loop=%i, switch_print=%i, switch_transfer_type=%i\n",
+      C.switch_nonlinear, C.switch_1loop, C.switch_print, 
+      C.switch_transfer_type);
     fflush(stdout);
   }
 
@@ -113,41 +114,48 @@ int print_cosmoparam(const struct cosmoparam C, int verbosity){
   return 0;
 }
 
-double integrate_hdm_distribution_function(struct cosmoparam *C){
+int initialize_Omega_hdm_t_0(struct cosmoparam *C, const char *dist, int N_tau){
+
+  int nf = 0;
   FILE *fp;
-  if( (fp=fopen(C->file_hdm_distribution,"r")) == NULL ){
-    printf("ERROR: Distribution function file %s not found.  Quitting.\n",
-	   C->file_hdm_distribution);
+  if( (fp=fopen(dist,"r")) == NULL ){
+    printf("ERROR: File %s not found.  Quitting.\n",dist);
     exit(1);
   }
 
-  int N = 0;
   char buf[1000];
-  double *q_hdm = malloc(COSMOPARAM_TAU_MAX_Q * sizeof(double));
-  double *fqq_hdm = malloc(COSMOPARAM_TAU_MAX_Q * sizeof(double));
-
-  while(fgets(buf, sizeof buf, fp) && N<COSMOPARAM_TAU_MAX_Q){
-    double f_hdm;
-    while(*buf=='#' || *buf=='\n'){ fgets(buf, sizeof buf, fp); }
-    sscanf(buf,"%lg %lg", q_hdm+N, &f_hdm);
-    fqq_hdm[N] = f_hdm*q_hdm[N]*q_hdm[N];
-    N++;
-  }
-
-  if(N >= COSMOPARAM_TAU_MAX_Q){
-    printf("#integrate_hdm_distribution_function: WARNING! Maximum number \n");
-    printf("#  of points %i reached, stopping at q=%g.\n",
-	   COSMOPARAM_TAU_MAX_Q, q_hdm[N-1]);
-    fflush(stdout);
-  }
+  double qi[COSMOPARAM_MAX_NQ_NTAU], fi[COSMOPARAM_MAX_NQ_NTAU];
   
-  double result = ncint_composite_trapezoid(N,q_hdm,fqq_hdm);
-  free(q_hdm);
-  free(fqq_hdm);
-  return result;
-} 
+  while(fgets(buf,sizeof buf,fp)!=NULL && nf<COSMOPARAM_MAX_NQ_NTAU){
+    while(*buf=='#' || *buf=='\n') fgets(buf, sizeof buf, fp);
+    sscanf(buf,"%lg %lg",qi+nf, fi+nf);
+    nf++;
+  }
+
+  gsl_interp_accel *acc = gsl_interp_accel_alloc();
+  gsl_spline *f_hdm = gsl_spline_alloc(gsl_interp_cspline,nf);
+  gsl_spline_init(f_hdm, qi, fi, nf);
+
+  double sum_wef = 0;
+  for(int t=0; t<N_tau; t++){
+    //double pre = GALAQ_q[t]*GALAQ_q[t] * exp(GALAQ_q[t]);
+    double pre = pow(GALAQ_q[t],2.0-GALAQ_alpha) * exp(GALAQ_q[t]);
+    double f_hdm_q = gsl_spline_eval(f_hdm, GALAQ_q[t], acc);
+    C->Omega_hdm_t_0[t] = pre * GALAQ_w[t] * f_hdm_q;
+    sum_wef += C->Omega_hdm_t_0[t];
+  }
+
+  double Ohdmfac = C->Omega_hdm_0 / sum_wef;
+  for(int t=0; t<N_tau; t++) C->Omega_hdm_t_0[t] *= Ohdmfac;
+
+  fclose(fp);
+  gsl_spline_free (f_hdm);
+  gsl_interp_accel_free(acc);
+  return 0;
+}
 
 int initialize_cosmoparam(struct cosmoparam *C, const char *params, int N_tau){
+
   FILE *fp;
   if( (fp=fopen(params,"r")) == NULL ){
     printf("ERROR: File %s not found.  Quitting.\n",params);
@@ -189,10 +197,10 @@ int initialize_cosmoparam(struct cosmoparam *C, const char *params, int N_tau){
   sscanf(buf,"%i",&C->switch_1loop);
 
   do{ fgets(buf, sizeof buf, fp); } while(*buf=='#' || *buf=='\n');
-  sscanf(buf,"%i",&C->switch_print_linear);
+  sscanf(buf,"%i",&C->switch_print);
 
   do{ fgets(buf, sizeof buf, fp); } while(*buf=='#' || *buf=='\n');
-  sscanf(buf,"%i",&C->switch_print_rsd);
+  sscanf(buf,"%i",&C->switch_transfer_type);
 
   do{ fgets(buf, sizeof buf, fp); } while(*buf=='#' || *buf=='\n');
   sscanf(buf,"%lg",&C->z_nonlinear_initial);
@@ -232,22 +240,19 @@ int initialize_cosmoparam(struct cosmoparam *C, const char *params, int N_tau){
   C->N_nu_massive = COSMOPARAM_NU_MASSIVE;
 
   C->Omega_cb_0 = C->Omega_m_0 - C->Omega_hdm_0;
-  double nu_hdm = integrate_hdm_distribution_function(C);
-  C->g_hdm = 126.87 * C->Omega_hdm_0 * C->Omega_m_0 * C->h*C->h
-    / ( nu_hdm * C->m_hdm_eV * C->T_hdm_0_K*C->T_hdm_0_K*C->T_hdm_0_K );
+  //double nu_hdm = 4.0*M_PI*integrate_hdm_distribution_function(C);
+  //C->g_hdm = 126.87 * C->Omega_hdm_0 * C->h*C->h
+  //  / ( nu_hdm * C->m_hdm_eV * C->T_hdm_0_K*C->T_hdm_0_K*C->T_hdm_0_K );
+  C->g_hdm = 1.0;
 
-  //TESTING!!
-  printf("#initialize_cosmoparam: nu_hdm=%1.14g, deg_hdm=%1.14g\n",
-	 nu_hdm, C->g_hdm);
-  fflush(stdout);
-  
+  //C->Omega_hdm_t_0 = C->Omega_hdm_0 / N_tau;
+  initialize_Omega_hdm_t_0(C, C->file_hdm_distribution, N_tau);
 
-  C->Omega_hdm_t_0 = C->Omega_hdm_0 / N_tau;
   C->Omega_gam_0 = 4.46911743913795e-07 * pow(C->T_CMB_0_K,4) / (C->h*C->h);
-  C->Omega_hdmrel_0 = 0.227107317660239
+  C->Omega_nurel_0 = 0.227107317660239
     * (C->N_nu_eff-C->N_nu_massive) * C->Omega_gam_0;
-  C->Omega_hdmgam_0 = (1.0+0.227107317660239*C->N_nu_eff)*C->Omega_gam_0;
-  C->Omega_rel_0 = C->Omega_gam_0 + C->Omega_hdmrel_0;
+  C->Omega_nugam_0 = (1.0+0.227107317660239*C->N_nu_eff)*C->Omega_gam_0;
+  C->Omega_rel_0 = C->Omega_gam_0 + C->Omega_nurel_0;
   C->Omega_de_0 = 1.0 - C->Omega_cb_0 - C->Omega_hdm_0 - C->Omega_rel_0;
   C->Omega_m_h2_0 = C->Omega_m_0 * C->h	* C->h;
   C->Omega_b_h2_0 = C->Omega_b_0 * C->h * C->h;
@@ -255,7 +260,7 @@ int initialize_cosmoparam(struct cosmoparam *C, const char *params, int N_tau){
   C->w_eos_cdm = 0;
   C->w_eos_gam = 0.333333333333333333;
   C->f_cb_0 = C->Omega_cb_0 / C->Omega_m_0;
-  C->f_hdm_0 = C->Omega_hdm_0 / C->Omega_m_0;
+  for(int t=0; t<N_tau; t++) C->f_hdm_0[t] = C->Omega_hdm_t_0[t]/C->Omega_m_0;
 
   C->sound_horiz = 44.5*C->h*log(9.83/C->Omega_m_h2_0)
     / sqrt(1.0 + 10.0 * pow(C->Omega_b_h2_0,0.75)); /*[Mpc/h]*/ 
@@ -286,8 +291,8 @@ int copy_cosmoparam(const struct cosmoparam B, struct cosmoparam *C){
 
   C->switch_nonlinear = B.switch_nonlinear;
   C->switch_1loop = B.switch_1loop;
-  C->switch_print_linear = B.switch_print_linear;
-  C->switch_print_rsd = B.switch_print_rsd;
+  C->switch_print = B.switch_print;
+  C->switch_transfer_type = B.switch_transfer_type;
 
   C->z_nonlinear_initial = B.z_nonlinear_initial;
   C->num_z_outputs = B.num_z_outputs;
@@ -306,10 +311,10 @@ int copy_cosmoparam(const struct cosmoparam B, struct cosmoparam *C){
   C->N_nu_massive = B.N_nu_massive;
   C->Omega_cb_0 = B.Omega_cb_0;
   C->Omega_hdm_0 = B.Omega_hdm_0;
-  C->Omega_hdm_t_0 = B.Omega_hdm_t_0;
+  for(int t=0; t<B.N_tau; t++) C->Omega_hdm_t_0[t] = B.Omega_hdm_t_0[t];
   C->Omega_gam_0 = B.Omega_gam_0;
-  C->Omega_hdmrel_0 = B.Omega_hdmrel_0;
-  C->Omega_hdmgam_0 = B.Omega_hdmgam_0;
+  C->Omega_nurel_0 = B.Omega_nurel_0;
+  C->Omega_nugam_0 = B.Omega_nugam_0;
   C->Omega_rel_0 = B.Omega_rel_0;
   C->Omega_de_0 = B.Omega_de_0;
   C->Omega_m_h2_0 = B.Omega_m_h2_0;
@@ -318,7 +323,7 @@ int copy_cosmoparam(const struct cosmoparam B, struct cosmoparam *C){
   C->w_eos_cdm = 0;
   C->w_eos_gam = 0.333333333333333333;
   C->f_cb_0 = B.f_cb_0;
-  C->f_hdm_0 = B.f_hdm_0;
+  for(int t=0; t<B.N_tau; t++) C->f_hdm_0[t] = B.f_hdm_0[t];
 
   C->sound_horiz = B.sound_horiz;
   C->alpha_G = B.alpha_G;
@@ -334,8 +339,8 @@ double cosmoparam_fdiff(double x, double y){
 int isequal_cosmoparam(const struct cosmoparam B, const struct cosmoparam C){
   int equal = (B.switch_nonlinear == C.switch_nonlinear);
   equal = equal && ( B.switch_1loop == C.switch_1loop );
-  equal	= equal	&& ( B.switch_print_linear == C.switch_print_linear );
-  equal = equal && ( B.switch_print_rsd == C.switch_print_rsd );
+  equal	= equal	&& ( B.switch_print == C.switch_print );
+  equal = equal && ( B.switch_transfer_type == C.switch_transfer_type );
   equal = equal && ( B.num_z_outputs == C.num_z_outputs );
   equal = equal && ( B.num_hdm_approx == C.num_hdm_approx );
   equal = equal && ( B.N_tau == C.N_tau );

@@ -40,27 +40,29 @@ echo 'Created file' class_${COSMO_MODEL}.ini
 echo ''
 sleep 1
 
+MF_FILE=params_MF.dat
+
 echo 'Creating the input file for multifluid with the cosmology selected'
-echo ${COSMO_NS} > params_MuFLR-HDM.dat
-echo ${COSMO_SIG8} >> params_MuFLR-HDM.dat
-echo ${COSMO_H0} >> params_MuFLR-HDM.dat
-echo ${COSMO_OM} >> params_MuFLR-HDM.dat
-echo ${COSMO_OB} >> params_MuFLR-HDM.dat
-echo ${COSMO_OH} >> params_MuFLR-HDM.dat
-echo ${COSMO_TCMBK} >> params_MuFLR-HDM.dat
-echo ${COSMO_W0} >> params_MuFLR-HDM.dat
-echo ${COSMO_WA} >> params_MuFLR-HDM.dat
-echo ${OUTPUT_NL} >> params_MuFLR-HDM.dat
-echo "0" >> params_MuFLR-HDM.dat
-echo ${OUTPUT_PRINT} >> params_MuFLR-HDM.dat
-echo "0" >> params_MuFLR-HDM.dat
-echo "200" >> params_MuFLR-HDM.dat
-echo ${DERIV_NZ} >> params_MuFLR-HDM.dat
-echo "${OUTPUT_Z}" >> params_MuFLR-HDM.dat
-echo "${CLASS_ROOT}/out_tk.dat" >> params_MuFLR-HDM.dat
-echo "1" >> params_MuFLR-HDM.dat
-echo ${COSMO_THDMK} >> params_MuFLR-HDM.dat
-echo ${COSMO_MHDM} >> params_MuFLR-HDM.dat
-echo ${COSMO_FHDM} >> params_MuFLR-HDM.dat
+echo ${COSMO_NS}                 > $MF_FILE 
+echo ${COSMO_SIG8}              >> $MF_FILE
+echo ${COSMO_H0}                >> $MF_FILE 
+echo ${COSMO_OM}                >> $MF_FILE 
+echo ${COSMO_OB}                >> $MF_FILE 
+echo ${COSMO_OH}                >> $MF_FILE 
+echo ${COSMO_TCMBK}             >> $MF_FILE
+echo ${COSMO_W0}                >> $MF_FILE
+echo ${COSMO_WA}                >> $MF_FILE
+echo ${OUTPUT_NL}               >> $MF_FILE
+echo "0"                        >> $MF_FILE
+echo ${OUTPUT_PRINT}            >> $MF_FILE 
+echo "0"                        >> $MF_FILE 
+echo "200"                      >> $MF_FILE 
+echo ${DERIV_NZ}                >> $MF_FILE 
+echo "${OUTPUT_Z}"              >> $MF_FILE 
+echo "${CLASS_ROOT}/out_tk.dat" >> $MF_FILE 
+echo "1"                        >> $MF_FILE 
+echo ${COSMO_THDMK}             >> $MF_FILE 
+echo ${COSMO_MHDM}              >> $MF_FILE 
+echo ${COSMO_FHDM}              >> $MF_FILE 
 
 

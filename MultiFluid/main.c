@@ -37,12 +37,13 @@
 #include <gsl/gsl_sf_trig.h>
 #include <gsl/gsl_spline.h>
 
-///////////#include "AU_pcu.h"
-#include "AU_ncint.h"
-#include "AU_fftgrid.h"
-#include "AU_cosmoparam.h"
-#include "AU_cosmofunc.h"
-#include "AU_fastpt_coord.h"
+#include "GaLaQ/N15_a0.h"
+
+#include "utils/ncint.h"
+#include "utils/fftgrid.h"
+#include "utils/cosmoparam.h"
+#include "utils/cosmofunc.h"
+#include "utils/fastpt_coord.h"
 
 //////////////////////////// SWITCHES AND TOLERANCES ///////////////////////////
 
@@ -108,18 +109,30 @@ inline double Pcbn(int ab, int ik, const double *y){
 }
 
 //hdm density monopole from perturbation array
-double d_hdm_mono(int ik, double z, const double *y){
-  
+double d_hdm_mono_init(const double *Ohdmt, int ik, double z, const double *y){
+
+  static int init = 0;
+  static double Omega_hdm_t_0[COSMOPARAM_MAX_N_TAU];
   double d_mono = 0, norm = 0, aeta = 1.0/(1.0+z), eta = log(aeta/aeta_in);
   
+  if(!init){
+    for(int t=0; t<N_tau; t++) Omega_hdm_t_0[t] = Ohdmt[t];
+    init = 1;
+  }
+
   for(int t=0; t<N_tau; t++){
-    double E_m = 1.0;
+    double E_m = Omega_hdm_t_0[t];
     d_mono += y[2*t*N_mu*NK + 0*NK + ik] * E_m;
     norm += E_m;
   }
 
   return d_mono / norm;
 }  
+
+double d_hdm_mono(int ik, double z, const double *y){
+  double dum[COSMOPARAM_MAX_N_TAU];
+  return d_hdm_mono_init(dum,ik,z,y);
+}
 
 //functions for extrapolating Legendre moments, using first and second
 //finite-difference approximations
@@ -291,9 +304,20 @@ int der(double eta, const double *y, double *dy, void *par){
   struct cosmoparam *C = (struct cosmoparam *)par;
   double Hc2_Hc02 = Hc2_Hc02_eta(eta,*C), Hc2 = Hc2_Hc02*Hc0h2, Hc = sqrt(Hc2),
     dlnHc = dlnHc_eta(eta,*C), ee = exp(eta), aeta = aeta_in*ee, ze=1.0/aeta-1;
-  double Xi[NK][2][2], fhc=C->f_hdm_0/C->f_cb_0; //linear evolution matrix
+  double Xi[NK][2][2], fhc=0; //linear evolution matrix
+  for(int t=0; t<N_tau; t++) fhc += C->f_hdm_0[t] / C->f_cb_0;
   for(int ieq=0; ieq<N_EQ; ieq++) dy[ieq] = 0;
   
+
+  //TESTING!!
+  static int der_counter = 0;
+  if(der_counter%100 == 0){
+    printf("#der: call %i at eta=%g, aeta=%g, ze=%g\n",der_counter,eta,aeta,ze);
+    fflush(stdout);
+  }
+  der_counter++;
+
+
   //initialize non-linear calculation
   double Ppad[3*NKP], Aacdbef[64*NK];
   if(C->switch_nonlinear && ze<C->z_nonlinear_initial){
@@ -437,8 +461,8 @@ int evolve_to_z(double z, double *w, const double *Ncb_in,
       double m_t = C.m_hdm_eV/tau_t_eV(t);
       double kfs2 = 1.5 * m_t*m_t * Hc0h2 * C.Omega_m_0 * aeta_in;
       double kfs = sqrt(kfs2), kpkfs = k + kfs, kpkfs2 = kpkfs*kpkfs;
-      double Ft = (1.0-C.f_hdm_0) * kfs2 / (kpkfs2 - C.f_hdm_0*kfs2);
-      double dlnFt = k*kpkfs / (kpkfs2 - C.f_hdm_0*kfs2);
+      double Ft = (1.0-C.f_hdm_0[t]) * kfs2 / (kpkfs2 - C.f_hdm_0[t]*kfs2);
+      double dlnFt = k*kpkfs / (kpkfs2 - C.f_hdm_0[t]*kfs2);
       w[(2*t+0)*N_mu*NK + 0*NK + i] = Ft * ycb0l(i,w);
       w[(2*t+1)*N_mu*NK + 0*NK + i] = dlnFt*yhdm0(t,0,i,w) + Ft*ycb1l(i,w);
     }
@@ -502,6 +526,17 @@ int evolve_step(double z0, double z1, double *w, const struct cosmoparam C){
   return 0;
 }
 
+void export_omega(double* arr, size_t len, const char* filename) {
+    FILE* fp = fopen(filename, "w");
+    if (!fp) { perror("Error opening file"); return;}
+
+    for (size_t i = 0; i < len; i++) {
+        fprintf(fp, "%g\n", arr[i]);
+    }
+    fclose(fp);
+}
+
+
 //////////////////////////////////// MAIN //////////////////////////////////////
 //various tests of code
 
@@ -510,10 +545,16 @@ int main(int argn, char *args[]){
   //initialize
   struct cosmoparam C;
   initialize_cosmoparam(&C,args[1],N_tau);
-  tau_t_eV_init(0,C.file_hdm_distribution,C.T_hdm_0_K);
+  tau_t_eV_init(0,C.T_hdm_0_K);
   Pmat0(1,C);
-  double N_cb[NK], *y = (double *)malloc(N_EQ*sizeof(double));
+  double f_hdm_tot_0 = 0, N_cb[NK], *y = (double *)malloc(N_EQ*sizeof(double));
+  for(int i=0; i<N_EQ; i++) y[i] = 0;
+  d_hdm_mono_init(C.Omega_hdm_t_0, 0, 0, y);
   for(int i=0; i<NK; i++) N_cb[i] = 1;
+  for(int t=0; t<N_tau; t++) f_hdm_tot_0 += C.f_hdm_0[t];
+  printf("Omega: \n");
+  for(int t=0; t<N_tau; t++) printf("%1.9g\n", C.Omega_hdm_t_0[t]);
+  export_omega(&C.Omega_hdm_t_0[0], N_tau, "omega_table.txt");
 
   //redshift list
   double *zn = (double *)malloc((C.num_z_outputs+1)*sizeof(double));
@@ -533,7 +574,7 @@ int main(int argn, char *args[]){
 
     if(zn[C.num_z_outputs] > 1e-9) evolve_step(zn[C.num_z_outputs],0,y,C);
     for(int i=0; i<NK; i++){
-      double dU = C.f_cb_0*y[2*N_tau*N_mu*NK+i] + C.f_hdm_0*d_hdm_mono(i,0,y);
+      double dU = C.f_cb_0*y[2*N_tau*N_mu*NK+i] + f_hdm_tot_0*d_hdm_mono(i,0,y);
       N_cb[i] *= sqrt(Pmat0(KMIN*exp(DLNK*i),C)) / dU;
     }
     
@@ -545,7 +586,7 @@ int main(int argn, char *args[]){
       }
 
       printf("###main: output at z=%g\n",zn[iz+1]);
-      print_menu(C.switch_print_linear,zn[iz+1],yzn+iz*N_EQ);
+      print_menu(C.switch_print,zn[iz+1],yzn+iz*N_EQ);
       printf("\n\n");
       fflush(stdout);
     }
@@ -557,8 +598,10 @@ int main(int argn, char *args[]){
     C.switch_nonlinear = 0;
     evolve_to_z(0,y,N_cb,C);
     for(int i=0; i<NK; i++){
-      double dU = C.f_cb_0*y[2*N_tau*N_mu*NK+i] + C.f_hdm_0*d_hdm_mono(i,0,y);
+      double dU = C.f_cb_0*y[2*N_tau*N_mu*NK+i] + f_hdm_tot_0*d_hdm_mono(i,0,y);
       N_cb[i] *= sqrt(Pmat0(KMIN*exp(DLNK*i),C)) / dU;
+      printf("###main:N_cb[%i]: %g\n", i, N_cb[i]);
+      fflush(stdout);
     }
     
     //turn non-linearity back on and integrate forwards
@@ -568,7 +611,7 @@ int main(int argn, char *args[]){
     for(int iz=0; iz<C.num_z_outputs; iz++){
       evolve_step(zn[iz],zn[iz+1],y,C);
       printf("###main: output at z=%g\n",zn[iz+1]);
-      print_menu(C.switch_print_linear,zn[iz+1],y);
+      print_menu(C.switch_print,zn[iz+1],y);
       printf("\n\n");
       fflush(stdout);
     }

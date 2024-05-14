@@ -40,8 +40,8 @@ const double COSMOFUNC_EREL = 1e-5; //relative error tolerance
 //////////////////////////////////// NEUTRINOS /////////////////////////////////
 
 //neutrino fluid parameters
-const int N_tau = 20; //number of neutrino streams; maximum 900 for this pcu.h
-const int N_mu = 20; //number of multipoles to track for each stream
+const int N_tau = 15; //number of neutrino streams; maximum 900 for this pcu.h
+const int N_mu = 15; //number of multipoles to track for each stream
 
 //total number of equations:
 //  2*N_tau*N_mu*NK (delta, theta for N_tau streams * N_mu moments * NK wave#)
@@ -51,67 +51,25 @@ const int N_mu = 20; //number of multipoles to track for each stream
 
 //homogeneous-universe momentum [eV], used to identify neutrino streams
 const int FREE_TAU_TABLE = -4375643; //some negative integer, pick any
-const int DEBUG_NU_MOMENTA = 1;
+const int DEBUG_HDM_MOMENTA = 1;
 
-double tau_t_eV_init(int t, const char *f0file, double T_hdm_0_K){
+double tau_t_eV_init(int t, double T_hdm_0_K){
 
   if(N_tau==0) return 0.0;
   static int init = 0;
   static double *tau_table_eV;
 
   if(!init){
+    tau_table_eV = (double *)malloc(N_tau * sizeof(double));
 
-    //read input file
-    FILE *fp;
-    if( (fp=fopen(f0file,"r")) == NULL ){
-      printf("ERROR: File %s not found.  Quitting.\n",f0file);
-      exit(1);
-    }
-    
-    int pcu_N = 0;
-    //double pcu_tau[COSMOPARAM_TAU_MAX_Q], pcu_prob[COSMOPARAM_TAU_MAX_Q],
-    double *pcu_tau  = malloc(COSMOPARAM_TAU_MAX_Q * sizeof(double));
-    double *pcu_prob = malloc(COSMOPARAM_TAU_MAX_Q * sizeof(double));
-    double q0=0, q0Last=0, f0=0, f0Last=0, T_hdm_0_eV=T_hdm_0_K/11604.525;
-    pcu_prob[0] = 0;
-    char buf[1000];
-
-    while( fgets(buf, sizeof buf, fp) ){
-      while(*buf=='#' || *buf=='\n'){ fgets(buf, sizeof buf, fp); }
-      q0Last = q0;
-      f0Last = f0;
-      sscanf(buf,"%lg %lg",&q0,&f0);
-
-      pcu_tau[pcu_N] = q0 * T_hdm_0_eV;
-      if(pcu_N>0) pcu_prob[pcu_N] = pcu_prob[pcu_N-1]
-		 + 2.0*M_PI*(q0-q0Last) * (q0*q0*f0 + q0Last*q0Last*f0Last);
-      pcu_N++;
-    }
-
-    //normalize and truncate tail for which pcu=1
-    double norm_pcu = 1.0 / pcu_prob[pcu_N-1];
-    for(int i=0; i<pcu_N; i++) pcu_prob[i] *= norm_pcu;
-    for(int i=pcu_N-2; i>0; i--) 
-      pcu_N -= (pcu_prob[i]>=1.0) || (pcu_prob[i]>=pcu_prob[i+1]);
-
-    tau_table_eV = malloc(N_tau * sizeof(double));
-    gsl_interp_accel *spline_accel = gsl_interp_accel_alloc();
-    gsl_spline *spline = gsl_spline_alloc(gsl_interp_steffen,pcu_N);
-    gsl_spline_init(spline,pcu_prob,pcu_tau,pcu_N);
-
-    if(DEBUG_NU_MOMENTA) printf("#tau_t_eV: momenta [eV]:");
+    if(DEBUG_HDM_MOMENTA) printf("#tau_t_eV: momenta [eV]:");
     
     for(int t=0; t<N_tau; t++){
-      double prob = (0.5+t) / N_tau;
-      tau_table_eV[t] = gsl_spline_eval(spline,prob,spline_accel);
-      if(DEBUG_NU_MOMENTA) printf(" %g",tau_table_eV[t]);
+      tau_table_eV[t] = GALAQ_q[t] * T_hdm_0_K / 11604.5;
+      if(DEBUG_HDM_MOMENTA) printf(" %g",tau_table_eV[t]);
     }
 
-    if(DEBUG_NU_MOMENTA){ printf("\n"); fflush(stdout); }
-    gsl_spline_free(spline);
-    gsl_interp_accel_free(spline_accel);
-    free(pcu_tau);
-    free(pcu_prob);
+    if(DEBUG_HDM_MOMENTA) printf("\n");
     init = 1;
   }
 
@@ -123,7 +81,7 @@ double tau_t_eV_init(int t, const char *f0file, double T_hdm_0_K){
   return tau_table_eV[t];
 }
 
-double tau_t_eV(int t){ char dum; return tau_t_eV_init(t,&dum,0); }
+double tau_t_eV(int t){ return tau_t_eV_init(t,-1); }
 
 //speed -tau_t / tau0_t of each neutrino species
 double v_t_eta(int t, double eta, const struct cosmoparam C){
@@ -188,7 +146,7 @@ double Hc2_Hc02_eta(double eta, const struct cosmoparam C){
   double sum_OEc = C.Omega_cb_0/aeta + C.Omega_rel_0/aeta2 + C.Omega_de_0*Ec_de;
   
   //hot dark matter, using relativistic Omega_hdm(eta)
-  for(int t=0; t<N_tau; t++) sum_OEc += C.Omega_hdm_t_0 * Ec_t_eta_REL(t,eta,C);
+  for(int t=0; t<N_tau; t++) sum_OEc+=C.Omega_hdm_t_0[t]*Ec_t_eta_REL(t,eta,C);
 
   return sum_OEc;
 }
@@ -208,7 +166,7 @@ double dlnHc_eta(double eta, const struct cosmoparam C){
     + dlnEc_de_eta(eta,C) * C.Omega_de_0 * Ec_de_eta(eta,C); //DE
   
   for(int t=0; t<N_tau; t++)//neutrino fluids
-    sum_OdEc +=  dlnEc_t_eta_REL(t,eta,C)*Ec_t_eta_REL(t,eta,C)*C.Omega_hdm_t_0;
+    sum_OdEc+=dlnEc_t_eta_REL(t,eta,C)*Ec_t_eta_REL(t,eta,C)*C.Omega_hdm_t_0[t];
   
   return pre * sum_OdEc;
 }
@@ -225,7 +183,7 @@ double OF_eta(int F, double eta, const struct cosmoparam C){
   else if(F == N_tau+2) //dark energy, assumed Lambda
     return C.Omega_de_0 * Ec_de_eta(eta,C) * Hc02_Hc2;
   else if(F<0 || F>N_tau+2) return 0.0; //no fluids should have these indices
-  return C.Omega_hdm_t_0 * Ec_t_eta(F,eta) * Hc02_Hc2;
+  return C.Omega_hdm_t_0[F] * Ec_t_eta(F,eta) * Hc02_Hc2;
 }
 
 /////////////////////////// INHOMOGENEOUS COSMOLOGY ////////////////////////////
@@ -292,13 +250,25 @@ double Tmat0(double k, const struct cosmoparam C){
 
     while( fgets(line,sizeof line, fp) && !feof(fp)){ 
       if(*line != '#'){
-        sscanf(line,"%lg %lg %lg %lg %lg %lg %lg",t,t+1,t+2,t+3,t+4,t+5,t+6);
-        //sscanf(line,"%lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg",
-        //       t,t+1,t+2,t+3,t+4,t+5,t+6,t+7,t+8,t+9,t+10,t+11,t+12);
+
+        if(C.switch_transfer_type == 1)
+          sscanf(line,"%lg %lg %lg %lg %lg %lg %lg",t,t+1,t+2,t+3,t+4,t+5,t+6);
+        else if(C.switch_transfer_type == 0)      
+          sscanf(line,"%lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg",
+                 t,t+1,t+2,t+3,t+4,t+5,t+6,t+7,t+8,t+9,t+10,t+11,t+12);
+        else if(C.switch_transfer_type == 2){
+          int classTncol = 11;
+          sscanf(line,"%lg %lg %lg %lg %lg %lg %lg %lg %lg %lg %lg",
+                 t,t+1,t+2,t+3,t+4,t+5,t+6,t+7,t+8,t+9,t+10); //11 columns
+          double classTfac = -1.0 / (t[0]*t[0]*C.h*C.h);
+          for(int j=1; j<classTncol; j++) t[j] *= classTfac;
+        }
+
+        double Tm = (C.switch_transfer_type==2 ? t[7] : t[6]);
         double Teh = T_EH(t[0],C);
-        if(nt==0) T0 = t[6];
+        if(nt==0) T0 = Tm;
         lnkT[nt] = log(t[0]);
-        Ttot_Teh[nt] = t[6] / (Teh * T0);
+        Ttot_Teh[nt] = Tm / (Teh * T0);
         nt++;
       }
     }
