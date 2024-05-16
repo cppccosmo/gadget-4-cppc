@@ -196,8 +196,9 @@ void sim::begrun1(const char *parameterFile)
 	    }
 	  case 2:
 	    {
-		  //Nulinear.tau_t_eV(0); // This is in the built in case of FD neutrinos
-		  Nulinear.tau_t_eV_hdm(0); // Needs to tread psd file and compute tau
+		  // Allocate tau and omega tables
+		  Nulinear.tau_t(0);
+		  Nulinear.omega_t(0); 
 
                   /* This is initialised here because it will never be freed, so its best to have it in the deepest part of the stack */
 		  int local_y_nu_size = 0, local_n_k = 0;
@@ -229,14 +230,19 @@ void sim::begrun1(const char *parameterFile)
 		  mpi_printf("NEUTRINOS/HDM: Omega_nu = %.5f \n",All.OmegaNuLin+All.OmegaNuPart);
 		  mpi_printf("NEUTRINOS/HDM: f_nu     = %.5f \n",All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
 		  mpi_printf("NEUTRINOS/HDM: f_cb     = %.5f \n",All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
-		  mpi_printf("NEUTRINOS/HDM: Tau_0    = %.7f eV\n",Nulinear.tau_t_eV(0));
-		  mpi_printf("NEUTRINOS/HDM: Tau_%d   = %.7f eV\n",Nulinear.N_tau_parser()-1,Nulinear.tau_t_eV(Nulinear.N_tau_parser()-1));
+		  mpi_printf("NEUTRINOS/HDM: Tau_0    = %.9f eV\n",Nulinear.tau_t(0));
+		  mpi_printf("NEUTRINOS/HDM: Tau_%d   = %.9f eV\n",Nulinear.N_tau_parser()-1,Nulinear.tau_t(Nulinear.N_tau_parser()-1));
+		  mpi_printf("NEUTRINOS/HDM: Omega_0  = %.5e eV\n",Nulinear.omega_t(0));
+		  mpi_printf("NEUTRINOS/HDM: Omega_%d = %.5e eV\n",Nulinear.N_tau_parser()-1,Nulinear.omega_t(Nulinear.N_tau_parser()-1));
 		  mpi_printf("---------------------------------------------------------------------\n");
 		  break;
 	    }
 	  case 3:
 	    {
-		  Nulinear.tau_t_eV_hdm(0);
+		  // Allocate tau and omega tables
+		  Nulinear.tau_t(0);
+		  Nulinear.omega_t(0); 
+
 		  mpi_printf("\n---------------------------------------------------------------------\n");
 		  mpi_printf("NEUTRINOS/HDM: Generalised SuperEasy (GSE) linear response\n");
 		  mpi_printf("NEUTRINOS/HDM: Mass      = %.5f eV\n",Nulinear.m_nu_eV_parser());
@@ -246,8 +252,10 @@ void sim::begrun1(const char *parameterFile)
 		  mpi_printf("NEUTRINOS/HDM: Omega_hdm = %.5f \n",All.OmegaNuLin+All.OmegaNuPart);
 		  mpi_printf("NEUTRINOS/HDM: f_hdm     = %.5f \n",All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
 		  mpi_printf("NEUTRINOS/HDM: f_cb      = %.5f \n",All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart));
-		  mpi_printf("NEUTRINOS/HDM: Tau_0     = %.7f eV\n",Nulinear.tau_t_eV_hdm(0));
-		  mpi_printf("NEUTRINOS/HDM: Tau_%d    = %.7f eV\n",Nulinear.N_tau_parser()-1,Nulinear.tau_t_eV_hdm(Nulinear.N_tau_parser()-1));
+		  mpi_printf("NEUTRINOS/HDM: Tau_0     = %.9f eV\n",Nulinear.tau_t(0));
+		  mpi_printf("NEUTRINOS/HDM: Tau_%d    = %.9f eV\n",Nulinear.N_tau_parser()-1,Nulinear.tau_t(Nulinear.N_tau_parser()-1));
+		  mpi_printf("NEUTRINOS/HDM: Omega_0   = %.5e eV\n",Nulinear.omega_t(0));
+		  mpi_printf("NEUTRINOS/HDM: Omega_%d  = %.5e eV\n",Nulinear.N_tau_parser()-1,Nulinear.omega_t(Nulinear.N_tau_parser()-1));
 		  mpi_printf("---------------------------------------------------------------------\n");
 		  break;
 	    }

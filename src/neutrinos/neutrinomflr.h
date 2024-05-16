@@ -28,8 +28,9 @@ public:
 #define N_EQ (2*N_tau*N_mu+2)
 
     // tables with momenta
-    double tau_t_eV(int t);
-    double tau_t_eV_hdm(int t);
+    double tau_t_FD(int t);
+    double tau_t(int t);
+    double omega_t(int t);
     
     // homogeneous evolution functions
     double v_t_eta(int t, double eta);

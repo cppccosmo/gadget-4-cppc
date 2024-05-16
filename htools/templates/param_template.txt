@@ -15,7 +15,7 @@ TimeLimitCPU              8640000   % seconds
 CpuTimeBetRestartFile     82800     % seconds
 
 %----- Memory alloction
-MaxMemSize                2900      % MByte
+MaxMemSize                1900      % MByte
 
 %---- Caracteristics of run
 TimeBegin                 TEMPLATE_P_ZIN 

@@ -33,8 +33,8 @@
 #include "../system/system.h"
 #include "../time_integration/timestep.h"
 
-/* Create tau table from tabulated cumulative function of Fermi-Dirac*/
-double nulinear::tau_t_eV(int t) {
+/* Create tau table from tabulated cumulative function of Fermi-Dirac (legacy)*/
+double nulinear::tau_t_FD(int t) {
     if (N_tau==0) return 0.0;
     static int init = 0;
     static double *tau_table_eV;
@@ -63,17 +63,17 @@ double nulinear::tau_t_eV(int t) {
     return tau_table_eV[t];
 }
 
-/* Create tau table by reading tau_table.txt from MuFLR-HDM, folder MF in our gadget4 */
-double nulinear::tau_t_eV_hdm(int t){
+/* Create tau table by reading tau_table.txt */
+double nulinear::tau_t(int t){
     
-    static int init = 0;
-    double *tau_table;
+    static int flag = 0;
+    static double *tau_table;
 
-    if(!init)
+    if(!flag)
     {
         FILE* fp = fopen("tau_table.txt", "r");
         if (fp == NULL) {
-            printf("Error: unable to open file\n");
+            printf("Error: unable to open file tau_table.txt\n");
             exit(1);
         }
 
@@ -85,7 +85,7 @@ double nulinear::tau_t_eV_hdm(int t){
             }
         }
         
-        tau_table = (double *)Mem.mymalloc_movable(&tau_table, "tau_table_eV", num_lines * sizeof(double));
+        tau_table = (double *)Mem.mymalloc_movable(&tau_table, "tau_table", num_lines * sizeof(double));
         fseek(fp, 0, SEEK_SET);
 
         double value;
@@ -95,20 +95,64 @@ double nulinear::tau_t_eV_hdm(int t){
             i++;
         }
         fclose(fp);
+        flag = 1;
     }
     
     if(t == -1){
         Mem.myfree(tau_table);
-        init = 0;
+        flag = 0;
         return 0;
      }
     return tau_table[t];
 }
 
+/* Create omega table by reading omega_table.txt */
+double nulinear::omega_t(int t){
+    
+    static int oflag = 0;
+    static double *omega_table;
+
+    if(!oflag)
+    {
+        FILE* fp = fopen("omega_table.txt", "r");
+        if (fp == NULL) {
+            printf("Error: unable to open file omega_table.txt\n");
+            exit(1);
+        }
+
+        int num_lines = 0;
+        char c;
+        while ((c = fgetc(fp)) != EOF) {
+            if (c == '\n') {
+                num_lines++;
+            }
+        }
+        
+        omega_table = (double *)Mem.mymalloc_movable(&omega_table, "omega_table", num_lines * sizeof(double));
+        fseek(fp, 0, SEEK_SET);
+
+        double value;
+        int i = 0;
+        while (fscanf(fp, "%lf", &value) == 1) {
+            omega_table[i] = value;
+            i++;
+        }
+        fclose(fp);
+        oflag = 1;
+    }
+    
+    if(t == -1){
+        Mem.myfree(omega_table);
+        oflag = 0;
+        return 0;
+     }
+    return omega_table[t];
+}
+
 
 // speed -tau_t / tau0_t of each neutrino species
 double nulinear::v_t_eta(int t, double eta) {
-    double t_ma = tau_t_eV(t) / ( m_nu_eV * aeta_in * exp(eta) );
+    double t_ma = tau_t(t) / ( m_nu_eV * aeta_in * exp(eta) );
     return (t_ma<1 ? t_ma : 1);
 }
 
@@ -118,7 +162,7 @@ double nulinear::v2_t_eta(int t, double eta) {
 }
 
 double nulinear::v2_t_eta_REL(int t, double eta) {
-    double m_aeta_tau = m_nu_eV * aeta_in*exp(eta) / Nulinear.tau_t_eV(t);
+    double m_aeta_tau = m_nu_eV * aeta_in*exp(eta) / tau_t(t);
     return 1.0 / (1.0 + m_aeta_tau*m_aeta_tau);
 }
 
@@ -132,7 +176,7 @@ double nulinear::dlnEc_t_eta(int t, double eta){ return -1.0; }
 double nulinear::Ec_t_eta_REL(int t, double eta) {
     double vt2 = Nulinear.v2_t_eta_REL(t,eta), aeta = aeta_in*exp(eta);
     if(1-vt2 < 1e-12){
-        double ma_tau = m_nu_eV * aeta / Nulinear.tau_t_eV(t);
+        double ma_tau = m_nu_eV * aeta / tau_t(t);
         return sqrt(1.0 + ma_tau*ma_tau) / (aeta*ma_tau);
     }
     return 1.0 / (aeta * sqrt(1.0 - vt2));
@@ -166,7 +210,7 @@ double nulinear::Hc2_Hc02_eta(double eta) {
     
     //neutrinos
     if(All.OmegaNuLin != 0 || All.OmegaNuPart != 0) {
-      for(int t=0; t<N_tau; t++) sum_OEc += Omega_nu_t_0 * Nulinear.Ec_t_eta_REL(t,eta);
+      for(int t=0; t<N_tau; t++) sum_OEc += omega_t(t) * Nulinear.Ec_t_eta_REL(t,eta);
     }
 
     return sum_OEc;
@@ -187,7 +231,7 @@ double nulinear::OF_eta(int F, double eta) {
     else if(F == N_tau+2) // dark energy, assumed Lambda
       return Omega_de_0 * Nulinear.Ec_de_eta(eta) * Hc02_Hc2;
     else if(F<0 || F>N_tau+2) return 0.0; // no fluids  should have these indices
-    return Omega_nu_t_0 * Nulinear.Ec_t_eta(F,eta) * Hc02_Hc2;
+    return omega_t(F) * Nulinear.Ec_t_eta(F,eta) * Hc02_Hc2;
 }
 
 double nulinear::Hc_eta(double eta) { return Hc0h * sqrt(Nulinear.Hc2_Hc02_eta(eta)); }
@@ -201,8 +245,9 @@ double nulinear::dlnHc_eta(double eta) {
       - (1.0 + 3.0*w_eos_gam) * Omega_rel_0/aeta2 // photons + massless nu
       + Nulinear.dlnEc_de_eta(eta) * Omega_de_0 * Nulinear.Ec_de_eta(eta); // DE
 
-    for(int t=0; t<N_tau; t++) // neutrino fluids
-      sum_OdEc += Nulinear.dlnEc_t_eta_REL(t,eta) * Nulinear.Ec_t_eta_REL(t,eta) * Omega_nu_t_0;
+    for(int t=0; t<N_tau; t++){ 
+      sum_OdEc += Nulinear.dlnEc_t_eta_REL(t,eta) * Nulinear.Ec_t_eta_REL(t,eta) * omega_t(t);
+    }
 
     return pre * sum_OdEc;
 }
@@ -272,7 +317,7 @@ double nulinear::d_nu_mono(double z, const double *y) {
 #endif
 */
     for(int t=t_min; t<N_tau; t++){
-      double E_m = 1.0;
+      double E_m = omega_t(t);
       d_mono += y[2*t*N_mu] * E_m;
       norm += E_m;
     }
@@ -314,24 +359,6 @@ void nulinear::d_nu_mono_stream(double z, const double *y) {
       double d_mono = y[2*t*N_mu];
       printf("%f,", d_mono);
     }
-}
-
-void nulinear::print_delta(const double *w) {
-/*
-    for(int i=0; i<N_mu; i++) {
-      mpi_printf("%f,", w[2*i]);
-    }
-*/
-    printf("%g,", w[0]);
-}
-
-void nulinear::print_theta(const double *w) { 
-/*
-    for(int i=0; i<N_mu; i++) {
-      mpi_printf("%f,", w[2*i+1]);
-    }
-*/
-    printf("%g,", w[1]);
 }
 
 /////// Derivatives ///////
@@ -440,7 +467,7 @@ int nulinear::evolve_to_z(double k, double z, double *w) {
 
     // neutrino perturbations: monopoles only
     for(int t=0; t<N_tau; t++) {
-      double m_t = m_nu_eV/Nulinear.tau_t_eV(t);
+      double m_t = m_nu_eV / tau_t(t);
       double kfs2 = 1.5*m_t*m_t * Hc0h2 * Omega_m_0 * aeta_in;
       double kfs = sqrt(kfs2), kpkfs = k + kfs, kpkfs2 = kpkfs * kpkfs;
       double Ft = (1.0-fnu0) * kfs2 / (kpkfs2 - fnu0*kfs2);
@@ -497,7 +524,7 @@ int nulinear::evolve_step(double k, double z0, double z1, double *w) {
 /* Generalised SuperEasy p-dep. free-streaming scale  */
 double nulinear::fs_p(int alpha){
     double mass_eV = Nulinear.m_nu_eV_parser();
-    double tau_eV  = Nulinear.tau_t_eV(alpha);
+    double tau_eV  = tau_t(alpha);
     double pref    = 100.0 / 299792.0 * pow(1.5,0.5);
     return pref * sqrt(All.Time * (All.Omega0 + All.OmegaNuLin + All.OmegaNuPart)) * mass_eV / tau_eV ;
 }
@@ -535,11 +562,6 @@ double nulinear::m_nu_eV_parser(void) {
     return m_nu_eV;
 }
 
-/*
-double nulinear::m_hdm_eV_parser(void) {
-    return m_hdm_eV;
-}
-*/
 int nulinear::N_EQ_parser(void) {
     return N_EQ;
 }
