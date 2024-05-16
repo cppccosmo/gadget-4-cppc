@@ -4,7 +4,7 @@ OPT=$1                                        # 'start', 'restart', 'mf_restart'
 
 # Class ------------------------------------------------------------------------------------------ 
 
-COSMO_MODEL=ax02                              # Cosmology model
+COSMO_MODEL=nu05                              # Cosmology model
 CLASS_RES=0                                   # Class precision 0: Low, 1: High
 
 # Multifluid ------------------------------------------------------------------------------------- 
@@ -19,7 +19,7 @@ NPARTS=512                                    # Number of CDM particles
 ZIN=99.0                                      # Initial redshift in gadget
 BOXSIZE=256.0                                 # BoxSize for gadget in Mpc/h
 SOFT=0.04                                     # Softening length in units of BoxSize/Ngrid
-OUTPUT_G="49 39 29 19 9 3 1 0"                # Gadget snapshot output redshifts 
+OUTPUT_G="99 19 9 1 0"                        # Gadget snapshot output redshifts 
 LR_HDM=2                                      # Linear response type: 1 SE, 2 MF, 3 GSE
 
 # Hybrid restart -------------------------------------------------------------------------------- 
@@ -53,7 +53,7 @@ case $OPT in
     start)
 
         EXEC_CLASS=./class
-        EXEC_MF=./MuFLR
+        EXEC_MF=./MultiFluid
         
         CLASS_ROOT=$(grep 'root' class_template_LR.ini | sed -n 2p | awk '{print $3}' | awk -F"/" '{print $1}')
         mkdir -p $CLASS_ROOT
@@ -73,7 +73,7 @@ case $OPT in
         
         echo ''
         echo 'Running MuFLR ...'
-        (time ${EXEC_MF} ./params_MuFLR-HDM.dat ) >& mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
+        (time ${EXEC_MF} ./params_MF.dat ) >& mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt
         echo 'Done!'
         
         INPUT=mf_data/MuFLR_${COSMO_MODEL}_Ntau${N_TAU}_Nmu${N_MU}.txt

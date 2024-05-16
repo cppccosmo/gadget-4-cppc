@@ -35,6 +35,7 @@ sed -e s/TEMPLATE_CLASS_H0/${COSMO_H0}/g \
 	-e s/TEMPLATE_CLASS_W0/${COSMO_W0}/g \
 	-e s/TEMPLATE_CLASS_WA/${COSMO_WA}/g \
 	-e s/TEMPLATE_CLASS_NS/${COSMO_NS}/g \
+	-e s/TEMPLATE_CLASS_AS/${COSMO_AS}/g \
 	${CLASS_TEMPLATE} > input_class_${COSMO_MODEL}.ini
 echo 'Created file' class_${COSMO_MODEL}.ini
 echo ''

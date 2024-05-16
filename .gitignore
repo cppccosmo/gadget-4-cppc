@@ -1,8 +1,7 @@
 Gadget4
-Gadget4-MF
-Gadget4-H
 Gadget4-hybrid-restart
-MF/MuFLR
+MultiFluid/MultiFluid
+MF/*
 
 other/ 
 build/

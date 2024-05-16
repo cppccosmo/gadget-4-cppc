@@ -38,7 +38,7 @@ echo 'Compiling MuFLR ...'
 
 cd $MuFLRPath
 make > $1/info/compilation.txt
-cp MF $1; cd $cdir
+cp MultiFluid $1; cd $cdir
 echo 'Done!'
 echo ''
 
@@ -60,7 +60,7 @@ make -j CONFIG=Config.sh EXEC=$1/Gadget4 BUILD_DIR=$1/build >> $1/info/compilati
 
 sleep 1
 
-NK=$(grep "#define NK " MultiFluid/utils/ftgrid.h | awk '{print $3}' | sed 's/(//' | sed 's/)//')
+NK=$(grep "#define NK " MultiFluid/utils/fftgrid.h | awk '{print $3}' | sed 's/(//' | sed 's/)//')
 N_TAU=$(grep "const int N_tau = " MultiFluid/utils/cosmofunc.h | sed -e s/"const int N_tau = "//g -e s/";.*$"//g)
 N_MU=$(grep "const int N_mu = " MultiFluid/utils/cosmofunc.h | sed -e s/"const int N_mu = "//g -e s/";.*$"//g)
 echo 'Compilation options'     > $1/info/log.txt

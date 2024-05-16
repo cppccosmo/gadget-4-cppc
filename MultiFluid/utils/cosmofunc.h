@@ -41,7 +41,7 @@ const double COSMOFUNC_EREL = 1e-5; //relative error tolerance
 
 //neutrino fluid parameters
 const int N_tau = 15; //number of neutrino streams; maximum 900 for this pcu.h
-const int N_mu = 15; //number of multipoles to track for each stream
+const int N_mu = 10; //number of multipoles to track for each stream
 
 //total number of equations:
 //  2*N_tau*N_mu*NK (delta, theta for N_tau streams * N_mu moments * NK wave#)

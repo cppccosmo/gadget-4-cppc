@@ -552,8 +552,8 @@ int main(int argn, char *args[]){
   d_hdm_mono_init(C.Omega_hdm_t_0, 0, 0, y);
   for(int i=0; i<NK; i++) N_cb[i] = 1;
   for(int t=0; t<N_tau; t++) f_hdm_tot_0 += C.f_hdm_0[t];
-  printf("Omega: \n");
-  for(int t=0; t<N_tau; t++) printf("%1.9g\n", C.Omega_hdm_t_0[t]);
+  //printf("Omega: \n");
+  //for(int t=0; t<N_tau; t++) printf("%1.9g\n", C.Omega_hdm_t_0[t]);
   export_omega(&C.Omega_hdm_t_0[0], N_tau, "omega_table.txt");
 
   //redshift list
