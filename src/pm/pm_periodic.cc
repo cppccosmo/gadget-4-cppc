@@ -2578,7 +2578,12 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
       mpi_printf("NEUTRINOS: Begin multi-fluid initialisation\n");
 
 #ifndef MFLR_RST
-      printf("NEUTRINOS: process %d has %d k modes to do\n", ThisTask, local_n_k);
+      //printf("NEUTRINOS: process %d has %d k modes to do\n", ThisTask, local_n_k);
+      int maxk, mink;
+      MPI_Allreduce(&local_n_k, &maxk, 1, MPI_INT, MPI_MAX, Communicator);
+      MPI_Allreduce(&local_n_k, &mink, 1, MPI_INT, MPI_MIN, Communicator);
+      mpi_printf("NEUTRINOS: Maximum number of modes: %d\n", maxk);
+      mpi_printf("NEUTRINOS: Minimum number of modes: %d\n", mink);
       MPI_Barrier(Communicator);
 
       // for every momentum value, the neutrino perturbations are initialised and stored first in the temporary array, then its copied into the larger permanent y_nu array
