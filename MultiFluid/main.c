@@ -38,6 +38,7 @@
 #include <gsl/gsl_spline.h>
 
 #include "GaLaQ/N15_a0.h"
+//#include "GaLaQ/N30_a0.h"
 
 #include "utils/ncint.h"
 #include "utils/fftgrid.h"

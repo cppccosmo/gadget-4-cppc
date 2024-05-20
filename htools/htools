@@ -156,21 +156,28 @@ case $OPT in
         
         AFI=1
         if [[ $MULTI == 1 ]]; then
-            #NTYPES=$(h5dump -a Config/NTYPES output/snapshot_000.hdf5 | awk -F':' {'print $2'})
-            #TOTCONV=$(( $NTYPES - 2 | bc))
             AFI=$(echo $OUTPUT_G | awk -v j=$(echo $CTYPE + 1 | bc) '{print $j}' | awk '{printf("%.6f\n", 1/(1+$1))}')
         fi
          
+        #if [ ! -f "hdm_omega.txt" ]; then
+        #    BUF=$(python3 scripts/hdm_budget.py 0 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
+        #    COSMO_OHL=$(echo $BUF | awk '{print $1}')
+        #    COSMO_OHP=$(echo $BUF | awk '{print $2}')
+        #else
+        #    BUF=$(python3 scripts/hdm_budget.py 1 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
+        #    COSMO_OHL=$(echo $BUF | awk '{print $1}')
+        #    COSMO_OHP=$(echo $BUF | awk '{print $2}')
+        #fi
+        
         if [ ! -f "hdm_omega.txt" ]; then
-            BUF=$(python3 scripts/hdm_budget.py 0 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
-            COSMO_OHL=$(echo $BUF | awk '{print $1}')
-            COSMO_OHP=$(echo $BUF | awk '{print $2}')
-        else
-            BUF=$(python3 scripts/hdm_budget.py 1 $TOT_STREAMS $COSMO_OH $NSTREAMS $CTYPE)
-            COSMO_OHL=$(echo $BUF | awk '{print $1}')
-            COSMO_OHP=$(echo $BUF | awk '{print $2}')
+            tot=$(awk '{sum+=$NF} END {print sum}' omega_table.txt)
+            awk -v x=0 -v tt=$tot '{ for (i=1; i<=NF; i++) {x+=$i}; printf "%.8f %.8f\n", x, tt-x}' omega_table.txt > hdm_omega.txt
         fi
         
+        COSMO_OHL=$(awk -v ST=$ISTREAM 'FNR == ST {print $2}' hdm_omega.txt)
+        COSMO_OHP=$(awk -v ST=$ISTREAM 'FNR == ST {print $1}' hdm_omega.txt)
+            
+
         if [ ! -f "vel_list_full.txt" ]; then 
             touch vel_list_full.txt
             C=299792.458
