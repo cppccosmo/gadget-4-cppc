@@ -79,6 +79,25 @@ case $1 in
         COSMO_W0=-1.0                    # Dark energy equation of state
         COSMO_WA=0.0                            
     ;;
+    
+    no1)
+        
+	COSMO_MHDM=0.0587                # HDM mass
+        COSMO_DEG=1                      # HDM degeneracy for class
+        COSMO_NUR=1.0                    # Ultra-relativistic dofs
+        COSMO_THDMK=1.89142              # HDM component temperature today in K
+        COSMO_FHDM=psd/f_NO1.dat         # HDM distribution function to pass for GLR
+        COSMO_NS=0.9665                  # Primordial spectral index n_s
+        COSMO_SIG8=0.8                   # Sigma8
+        COSMO_H0=0.6766                  # Hubble paramter today in units of 100 km/s/Mpc
+        COSMO_OM=0.3111                  # Omega_m for all matter
+        COSMO_OB=0.04897                 # Omega_b for baryons
+        COSMO_OH=0.00155                 # Omega_h for the HDM component
+        COSMO_TCMBK=2.7255               # CMB temperature today in K
+        COSMO_W0=-1.0                    # Dark energy equation of state
+        COSMO_WA=0.0                            
+    ;;
+
 
 esac
 

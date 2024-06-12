@@ -230,5 +230,108 @@ def HY_m(ddir, omega_cb, omega_hdm, fu, Ntau=20):
         hy_De_m     = np.average(np.array([hy_De_cb, hy_De_hdm_p, hy_De_hdm_l]), axis=0, weights=[omega_cb, omega_hdm*fu/Ntau, omega_hdm*(1-fu/Ntau)])
     return k, hy_De_m
 
+### Gauss-Laguerre functions
+
+def Pcb(ddir, file):
+    boxsize  = int(np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,max_rows=3)[2])
+    max_rows = int(np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,max_rows=2)[1])
+    f = np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,skiprows=5, max_rows=max_rows)
+    return f[:,0], f[:,1], f[:,2]*boxsize**3
+
+def Pcb_hy(ddir, file):
+    boxsize  = int(np.loadtxt(ddir+'/powerspecs/powerspec_type1_%.3d.txt'%file,max_rows=3)[2])
+    max_rows = int(np.loadtxt(ddir+'/powerspecs/powerspec_type1_%.3d.txt'%file,max_rows=2)[1])
+    f = np.loadtxt(ddir+'/powerspecs/powerspec_type1_%.3d.txt'%file,skiprows=5, max_rows=max_rows)
+    return f[:,0], f[:,1], f[:,2]*boxsize**3
+
+def Pnu_mflr(ddir, file, omega):
+
+    # nu part
+    ncols = len(open(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file).readline().split(',')) - 1
+    k_mf = np.loadtxt(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file, delimiter=',',usecols=range(1))
+    delta_nu_mf = np.average(np.loadtxt(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file, delimiter=',',usecols=range(1,ncols)),axis=1,weights=omega)
+    max_rows = int(np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,max_rows=2)[1])
+    k = np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,skiprows=5, max_rows=max_rows)[:,0]
+    delta_nu_mfi = np.interp(k, k_mf, delta_nu_mf)
+    Pnu_mf = delta_nu_mfi**2
+    return k, Pnu_mf, Pnu_mf*k**3/(2*np.pi**2)
+
+def Pm_mflr(ddir, file, omega, omega_cb):
+
+    # nu part
+    ncols = len(open(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file).readline().split(',')) - 1
+    k_mf = np.loadtxt(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file, delimiter=',',usecols=range(1))
+    delta_nu_mf = np.average(np.loadtxt(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file, delimiter=',',usecols=range(1,ncols)),axis=1,weights=omega)
+    max_rows = int(np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,max_rows=2)[1])
+    boxsize  = int(np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,max_rows=3)[2])
+    k = np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,skiprows=5, max_rows=max_rows)[:,0]
+    delta_nu_mfi = np.interp(k, k_mf, delta_nu_mf)
+
+    # cdm part
+    f_cb = np.loadtxt(ddir+'/powerspecs/powerspec_%.3d.txt'%file,skiprows=5, max_rows=max_rows)
+    delta_cb = np.sqrt(f_cb[:,2])*boxsize**(3/2)
+
+    # tot
+    omega_tot = omega_cb+np.sum(omega)
+    f_cb = omega_cb/omega_tot
+    f_nu = np.sum(omega)/omega_tot
+    delta_tot = f_cb*delta_cb + f_nu*delta_nu_mfi
+    Pm_mflr = delta_tot**2
+    return k, Pm_mflr, Pm_mflr*k**3/(2*np.pi**2)#/boxsize**3
+
+
+def Pnu_hyb(ddir, file, nconv, omega):
+
+    # nu part
+    ncols = len(open(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file).readline().split(',')) - 1
+    k_mf = np.loadtxt(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file, delimiter=',',usecols=range(1))
+    delta_nu_mf = np.average(np.loadtxt(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file, delimiter=',',usecols=range(nconv+1,ncols)),axis=1,weights=omega[nconv:])
+    max_rows = int(np.loadtxt(ddir+'/powerspecs/powerspec_type1_%.3d.txt'%file,max_rows=2)[1])
+    boxsize = int(np.loadtxt(ddir+'/powerspecs/powerspec_type1_%.3d.txt'%file,max_rows=3)[2])
+    nu_parts = [np.loadtxt(ddir+'/powerspecs/powerspec_type%d_%.3d.txt'%(j, file),skiprows=5, max_rows=max_rows) for j in range(2, nconv+2)]
+    delta_nu_parts = [np.sqrt(nu_parts[k][:,2])*boxsize**(3/2) for k in range(nconv)]
+    k = nu_parts[0][:,0]
+    delta_nu_mfi = np.interp(k, k_mf, delta_nu_mf)
+    omega_hy_tot = np.sum(omega[:nconv])
+    omega_lr_tot = np.sum(omega)-omega_hy_tot
+    om_list = [omega[i] for i in range(nconv)]
+    om_list.append(omega_lr_tot)
+    de_list = delta_nu_parts
+    de_list.append(delta_nu_mfi)
+    delta_nu = np.average(np.array(de_list), axis=0, weights=np.array(om_list))
+    Pnu_hyb = delta_nu**2
+    return k, Pnu_hyb, Pnu_hyb*k**3/(2*np.pi**2)
+
+def Pm_hyb(ddir, file, nconv, omega, omega_cb):
+
+    # nu part
+    ncols = len(open(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file).readline().split(',')) - 1
+    k_mf = np.loadtxt(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file, delimiter=',',usecols=range(1))
+    delta_nu_mf = np.average(np.loadtxt(ddir+'/neutrino_stream_data/neutrino_delta_stream_%.3d.csv'%file, delimiter=',',usecols=range(nconv+1,ncols)),axis=1,weights=omega[nconv:])
+    max_rows = int(np.loadtxt(ddir+'/powerspecs/powerspec_type1_%.3d.txt'%file,max_rows=2)[1])
+    boxsize = int(np.loadtxt(ddir+'/powerspecs/powerspec_type1_%.3d.txt'%file,max_rows=3)[2])
+    nu_parts = [np.loadtxt(ddir+'/powerspecs/powerspec_type%d_%.3d.txt'%(j, file),skiprows=5, max_rows=max_rows) for j in range(2, nconv+2)]
+    delta_nu_parts = [np.sqrt(nu_parts[k][:,2])*boxsize**(3/2) for k in range(nconv)]
+    k = nu_parts[0][:,0]
+    delta_nu_mfi = np.interp(k, k_mf, delta_nu_mf)
+    omega_hy_tot = np.sum(omega[:nconv])
+    omega_lr_tot = np.sum(omega)-omega_hy_tot
+    om_list = [omega[i] for i in range(nconv)]
+    om_list.append(omega_lr_tot)
+    de_list = delta_nu_parts
+    de_list.append(delta_nu_mfi)
+    delta_nu = np.average(np.array(de_list), axis=0, weights=np.array(om_list))
+
+    # cdm part
+    f_cb = np.loadtxt(ddir+'/powerspecs/powerspec_type1_%.3d.txt'%file,skiprows=5, max_rows=max_rows)
+    delta_cb = np.sqrt(f_cb[:,2])*boxsize**(3/2)
+
+    # tot
+    omega_tot = omega_cb+np.sum(omega)
+    f_cb = omega_cb/omega_tot
+    f_nu = np.sum(omega)/omega_tot
+    delta_tot = f_cb*delta_cb + f_nu*delta_nu
+    Pm_mflr = delta_tot**2
+    return k, Pm_mflr, Pm_mflr*k**3/(2*np.pi**2)#/boxsize**3
 
 

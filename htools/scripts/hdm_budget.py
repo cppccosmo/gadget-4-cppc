@@ -6,6 +6,7 @@ total_streams = int(sys.argv[2])
 omega_tot     = float(sys.argv[3])
 deg           = int(sys.argv[4])
 curr_type     = int(sys.argv[5])
+stream        = int(sys.argv[6])
 
 def create_budget(o_tot, deg):
     omega_part = 0
@@ -26,11 +27,18 @@ def read_budget(curr):
     c_opart = opart[curr-1]
     print(c_olin, c_opart)
 
+def read_omega(i):
+    opart = np.loadtxt('omega_table.txt')
+    c_opart = np.sum(opart[i])
+    c_olin = omega_tot - cumpart
+    print(c_olin, c_opart)
+
 if __name__ == "__main__":
     if switch == 0:
         create_budget(omega_tot, deg)
     elif switch ==1:
-        read_budget(curr_type)
+        #read_budget(curr_type)
+        read_omega(stream)
 
 
 
