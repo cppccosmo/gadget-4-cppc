@@ -14,5 +14,8 @@ htools/class_template.ini
 htools/nu.ini
 htools/scripts/deprecated
 htools/scripts/__pycache__/
+htools/scripts/.ipynb_checkpoints/
 
-tests/
+test/
+
+input_class_ldcm.ini

@@ -198,8 +198,8 @@ INCL    += time_integration/timestep.h time_integration/driftfac.h
 
 
 SUBDIRS += neutrinos
-OBJS    += neutrinos/neutrino_mflr.o
-INCL    += neutrinos/neutrinomflr.h neutrinos/pcu.h
+OBJS    += neutrinos/neutrino.o
+INCL    += neutrinos/neutrino.h 
 
 
 SUBDIRS += gravity

@@ -22,7 +22,7 @@
 
 #include "../data/dtypes.h"
 #include "../main/main.h"
-#include "../neutrinos/neutrinomflr.h"
+#include "../neutrinos/neutrino.h"
 #include "gadgetconfig.h"
 
 class driftfac

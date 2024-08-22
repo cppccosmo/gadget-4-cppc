@@ -28,7 +28,7 @@
 #include "../ngenic/ngenic.h"
 #include "../pm/pm_mpi_fft.h"
 #include "../system/system.h"
-#include "../neutrinos/neutrinomflr.h"
+#include "../neutrinos/neutrino.h"
 
 double ngenic::ngenic_power_spec(double k)
 {

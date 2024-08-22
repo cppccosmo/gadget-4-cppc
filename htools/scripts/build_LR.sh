@@ -19,8 +19,7 @@ cp htools/scripts/cosmofiles.sh $1/scripts/
 cp htools/scripts/cosmologies.sh $1/scripts/
 cp load_modules.sh $1/scripts
 cp htools/templates/param_template.txt $1
-cp htools/templates/class_template_LR.ini $1 
-cp htools/templates/class_template_HR.ini $1 
+cp htools/templates/class_template.ini $1 
 cp MultiFluid/distribution_functions/* $1/psd
 
 case $2 in

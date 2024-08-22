@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <chrono>
 #include <sys/stat.h>
 #include <algorithm>
 #include <cassert>
@@ -36,7 +37,7 @@
 #include "../sort/cxxsort.h"
 #include "../system/system.h"
 #include "../time_integration/timestep.h"
-#include "../neutrinos/neutrinomflr.h"
+#include "../neutrinos/neutrino.h"
 
 /*!
  * These routines support two different strategies for doing the particle data exchange to assemble the density field
@@ -2556,8 +2557,7 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
       if(ThisTask != NTask-1) {
         local_n_k = (PMGRID - (PMGRID % NTask) ) / NTask; // all but the last process gets equal amount of k modes to do.       
       }
-      if(ThisTask == NTask-1) {
-
+      if(ThisTask == NTask-1){
         local_n_k = PMGRID % NTask + (PMGRID - (PMGRID % NTask) ) / NTask; // the last process gets the rest.
       }
     }
@@ -3046,9 +3046,9 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
 	
       // DEBUG PRINTS 
       //mpi_printf("modfac (SE)  at k->0   is %.5f\n",Nulinear.poisson_mod_fac(0.0001, All.Time));
-      //mpi_printf("modfac (GSE) at k->0   is %.5f\n",Nulinear.poisson_gen_mod_fac(0.0001, All.Time));
+      mpi_printf("modfac (GSE) at k->0   is %.5f\n",Nulinear.poisson_gen_mod_fac(0.0001, All.Time));
       //mpi_printf("modfac (SE)  at k->inf is %.5f\n",Nulinear.poisson_mod_fac(1.3, All.Time));
-      //mpi_printf("modfac (GSE) at k->inf is %.5f\n",Nulinear.poisson_gen_mod_fac(1.3, All.Time));
+      mpi_printf("modfac (GSE) at k->inf is %.5f\n",Nulinear.poisson_gen_mod_fac(1.3, All.Time));
 
 #ifndef GRAVITY_TALLBOX
 #ifdef FFT_COLUMN_BASED
@@ -3063,7 +3063,11 @@ void pm_periodic::pmforce_periodic(int mode, int *typelist)
         /* Do the inverse FFT to get the potential/forces */
 
 #ifndef FFT_COLUMN_BASED
+      auto start = std::chrono::high_resolution_clock::now();
       my_slab_based_fft(&myplan, &rhogrid[0], &workspace[0], -1);
+      auto end = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsed = end - start;
+      mpi_printf("Inverse FFT took %.4g seconds", elapsed.count());
 #else
       my_column_based_fft(&myplan, workspace, rhogrid, -1);
 #endif

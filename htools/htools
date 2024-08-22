@@ -1,11 +1,7 @@
 #!/bin/bash
 
-OPT=$1                                        # 'start', 'restart', 'mf_restart', 'postprocess'   
-
-# Class ------------------------------------------------------------------------------------------ 
-
-COSMO_MODEL=nu05                              # Cosmology model
-CLASS_RES=0                                   # Class precision 0: Low, 1: High
+OPT=$1                                        # 'start/restart'   
+COSMO_MODEL=e1                                # Cosmology model
 
 # Multifluid ------------------------------------------------------------------------------------- 
 
@@ -19,16 +15,16 @@ NPARTS=512                                    # Number of CDM particles
 ZIN=99.0                                      # Initial redshift in gadget
 BOXSIZE=256.0                                 # BoxSize for gadget in Mpc/h
 SOFT=0.04                                     # Softening length in units of BoxSize/Ngrid
-OUTPUT_G="99 19 9 1 0"                        # Gadget snapshot output redshifts 
+OUTPUT_G="99 3 1 0"                           # Gadget snapshot output redshifts 
 LR_HDM=2                                      # Linear response type: 1 SE, 2 MF, 3 GSE
 
-# Hybrid restart -------------------------------------------------------------------------------- 
+# Hybrid N-body -------------------------------------------------------------------------------- 
 
 ROOT_IN=output
 ROOT_OUT=output_c1
 SNAP=0                                        # Snapshot taken as IC
 CTYPE=1                                       # Conversion particle type (after PTYPE=1)
-NSTREAMS=4			              # Number of streams converted as particles
+NSTREAMS=1			              # Number of streams converted as particles
 ISTREAM=1                                     # First of the NSTREAMS to be converted, first overall is 1
 MULTI=0                                       # Multiple conversions,  0: no, 1: yes
 
@@ -37,10 +33,6 @@ MULTI=0                                       # Multiple conversions,  0: no, 1:
 DIR=run_512/ax2_0                             # Simulation directory to analyse
 PP=0                                          # Option:
                                               # 0: Save smoothed+raw particle spectra at z=0
-
-#NCONV=4                                       # Number of conversions to consider
-#DEG=4                                         # Flow degeneracy (upgrade to list at some point)
-#SNAP0="7 5 4 1"                               # Snapshots with z=0 (to be automated)
 
 ############################################################################################
  
@@ -55,12 +47,12 @@ case $OPT in
         EXEC_CLASS=./class
         EXEC_MF=./MultiFluid
         
-        CLASS_ROOT=$(grep 'root' class_template_LR.ini | sed -n 2p | awk '{print $3}' | awk -F"/" '{print $1}')
+        CLASS_ROOT=$(grep 'root' class_template.ini | sed -n 2p | awk '{print $3}' | awk -F"/" '{print $1}')
         mkdir -p $CLASS_ROOT
         
         echo ''
         echo 'Starting simulation with model' $COSMO_MODEL 
-        source scripts/cosmofiles.sh  $CLASS_RES # Create mf file, modify .ini file to match cosmology 
+        source scripts/cosmofiles.sh  # Create mf file, modify .ini file to match cosmology 
         echo ''
 
         echo 'Running class ...'
@@ -239,16 +231,15 @@ case $OPT in
         ;;
 
     postprocess)
+
+        # Under development
     
-        mkdir -p postprocess
-        mkdir -p postprocess/plots 
+        #mkdir -p postprocess
+        #mkdir -p postprocess/plots 
 
-        echo 'Post-processing simulations from folder' $DIR
+        #echo 'Post-processing simulations from folder' $DIR
 
-        python3 scripts/post.py $PP $DIR 
-        #SNAPSHOT=$(printf "%03d" $SNAP)
-        #echo "File: ${SNAP_BASE}_${SNAPSHOT}.hdf5"
-        #python3 scripts/post.py $SIMFOLDER ${SNAP_BASE}_${SNAPSHOT} $PTYPE
+        #python3 scripts/post.py $PP $DIR 
         ;;
 esac
 

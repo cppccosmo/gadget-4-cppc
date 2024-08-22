@@ -5,7 +5,7 @@
 #include "../main/main.h"
 #include "gadgetconfig.h"
 
-struct nulinear
+class nulinear
 {
 public:
     const double N_nu_eff = 3.044;
@@ -24,8 +24,8 @@ public:
     static const int N_mu = 20; // sets the highest legendre moment
 #endif
     
-#define N_nu_tot (2*N_tau*N_mu)
-#define N_EQ (2*N_tau*N_mu+2)
+    #define N_nu_tot (2*N_tau*N_mu)
+    #define N_EQ (2*N_tau*N_mu+2)
 
     // tables with momenta
     double tau_t_FD(int t);
@@ -79,6 +79,7 @@ public:
     double poisson_gen_mod_fac(double k, double a); // Gen. SuperEasy
 
     double *y_nu_dynamic;
+    double flow_mask[NTAU] = {1};
 
     int initialisation_switch = 1;
     double TimeOld;
@@ -97,7 +98,7 @@ public:
 //#define m_hdm_eV (All.MassHDM)
 
 #define m_nu_eV (All.MassHDM)
-#define Omega_nu_t_0 ((All.OmegaNuLin+All.OmegaNuPart)/N_tau)
+//#define Omega_nu_t_0 ((All.OmegaNuLin+All.OmegaNuPart)/N_tau)
 
 #define T_CMB_0_K_4 (T_CMB_0_K*T_CMB_0_K*T_CMB_0_K*T_CMB_0_K)
 #define Omega_gam_0 ((4.46911743913795e-07)*T_CMB_0_K_4/(All.HubbleParam*All.HubbleParam))

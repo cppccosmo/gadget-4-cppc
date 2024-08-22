@@ -6,20 +6,7 @@ DERIV_COSMO_OC=$(echo "${COSMO_OM} - ${COSMO_OB} - ${COSMO_OH}" | bc -l)
 DERIV_COSMO_THDM_TCMB=$(echo "${COSMO_THDMK} / ${COSMO_TCMBK}" | bc -l)
 DERIV_NZ=$(echo ${OUTPUT_Z} | wc -w)
 
-case $1 in 
-    0)
-    
-    CLASS_TEMPLATE=class_template_LR.ini
-    echo 'Selecting the low-res class template'
-    ;;
-    1)
-
-    CLASS_TEMPLATE=class_template_HR.ini
-    echo 'Selecting the high-res class template'
-    ;;
-esac
-
-
+CLASS_TEMPLATE=class_template.ini
 
 echo 'Adjusting class_template.ini with the cosmology selected'
 sed -e s/TEMPLATE_CLASS_H0/${COSMO_H0}/g \

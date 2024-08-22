@@ -17,8 +17,8 @@
 #include <gsl/gsl_odeiv2.h>
 #include <gsl/gsl_spline.h>
 
-#include "pcu.h"
-#include "neutrinomflr.h"
+//#include "pcu.h"
+#include "neutrino.h"
 #include "../data/allvars.h"
 #include "../data/dtypes.h"
 #include "../data/intposconvert.h"
@@ -33,35 +33,35 @@
 #include "../system/system.h"
 #include "../time_integration/timestep.h"
 
-/* Create tau table from tabulated cumulative function of Fermi-Dirac (legacy)*/
-double nulinear::tau_t_FD(int t) {
-    if (N_tau==0) return 0.0;
-    static int init = 0;
-    static double *tau_table_eV;
-    
-    if(!init) {
-        tau_table_eV = (double *)Mem.mymalloc_movable(&tau_table_eV, "tau_table_eV", N_tau * sizeof(double));
-        gsl_interp_accel *spline_accel = gsl_interp_accel_alloc();
-        gsl_spline *spline = gsl_spline_alloc(gsl_interp_steffen,pcu_N);
-        gsl_spline_init(spline,pcu_prob,pcu_tau,pcu_N);
-        
-        for(int t=0; t<N_tau; t++){
-            double prob = (0.5+t) / N_tau;
-            tau_table_eV[t] = gsl_spline_eval(spline,prob,spline_accel);
-        }
-        
-        gsl_spline_free(spline);
-        gsl_interp_accel_free(spline_accel);
-        init = 1;
-    }
-    
-    if(t == -1){
-        Mem.myfree(tau_table_eV);
-        init = 0;
-        return 0;
-    }
-    return tau_table_eV[t];
-}
+///* Create tau table from tabulated cumulative function of Fermi-Dirac (legacy)*/
+//double nulinear::tau_t_FD(int t) {
+//    if (N_tau==0) return 0.0;
+//    static int init = 0;
+//    static double *tau_table_eV;
+//    
+//    if(!init) {
+//        tau_table_eV = (double *)Mem.mymalloc_movable(&tau_table_eV, "tau_table_eV", N_tau * sizeof(double));
+//        gsl_interp_accel *spline_accel = gsl_interp_accel_alloc();
+//        gsl_spline *spline = gsl_spline_alloc(gsl_interp_steffen,pcu_N);
+//        gsl_spline_init(spline,pcu_prob,pcu_tau,pcu_N);
+//        
+//        for(int t=0; t<N_tau; t++){
+//            double prob = (0.5+t) / N_tau;
+//            tau_table_eV[t] = gsl_spline_eval(spline,prob,spline_accel);
+//        }
+//        
+//        gsl_spline_free(spline);
+//        gsl_interp_accel_free(spline_accel);
+//        init = 1;
+//    }
+//    
+//    if(t == -1){
+//        Mem.myfree(tau_table_eV);
+//        init = 0;
+//        return 0;
+//    }
+//    return tau_table_eV[t];
+//}
 
 /* Create tau table by reading tau_table.txt */
 double nulinear::tau_t(int t){
@@ -294,6 +294,19 @@ double nulinear::Poisson(double eta, double k, const double *y) {
     return pre * sum_Od;
 }
 
+
+//double nulinear::Poisson(double eta, double k, const double *y) {
+//    double Hc2 = Hc0h2 * Nulinear.Hc2_Hc02_eta(eta), pre = -1.5 * Hc2 / (k*k);
+//    double sum_Od = OF_eta(N_tau,eta)*y[2*N_tau*N_mu];
+//#ifdef ADDITIONAL_GRID
+//    skip = All.N_tau_part * All.Nu_part_deg; // Legacy Hybrid
+//    for(int i=0; i<skip; ++i) flow_mask[i] = 0;
+//#endif
+//    for(int t=0; t<N_tau; t++) 
+//        sum_Od += Nulinear.OF_eta(t,eta) * y[2*t*N_mu] * flow_mask[t];
+//    return pre * sum_Od;
+//}
+
 /////// Utility functions ///////
 
 // minimum, maximum functions
@@ -306,6 +319,7 @@ double nulinear::d_nu_mono(double z, const double *y) {
 
 // this is the default setting, where the neutrino flows are converted from the slowest to fastest. The flows are therefore excluded from tau = 0.
 // if however one wishes to exclude specific neutrino flows from the middle of the distribution (for convergence tests for example), then comment out the follow section of the code until the comment-line 'end-of-block'.
+   //double omega_tot = All.OmegaNuLin + OmegaNuPart;
 
     int t_min = 0;
 #ifdef ADDITIONAL_GRID
@@ -318,6 +332,7 @@ double nulinear::d_nu_mono(double z, const double *y) {
 */
     for(int t=t_min; t<N_tau; t++){
       double E_m = omega_t(t);
+      //double E_m = omega_t(t); // Experimental
       d_mono += y[2*t*N_mu] * E_m;
       norm += E_m;
     }
@@ -539,14 +554,14 @@ double nulinear::poisson_mod_fac(double k, double a) {
 
 /* Generalised Super-Easy Poisson modification factor */
 double nulinear::poisson_gen_mod_fac(double k, double a) {
-     double fcb = All.Omega0/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
-     double fnu = All.OmegaNuLin/(All.Omega0+All.OmegaNuLin+All.OmegaNuPart);
-     double sumN = 0.0;  // This takes sum_i G_i
+     double Om = All.Omega0+All.OmegaNuLin+All.OmegaNuPart;
+     double sumN = 0.0; 
      for(int i=0; i<Nulinear.N_tau_parser(); i++){
          double kfs  = Nulinear.fs_p(i);
-	 sumN += (kfs*kfs) / (k*k + k*kfs + kfs*kfs);
+         double w = Nulinear.omega_t(i)/Om;
+	 sumN += ((kfs*kfs) / (k*k + k*kfs + kfs*kfs))*w;
      }
-     return 1 + fnu/Nulinear.N_tau_parser()*sumN;
+     return 1 + sumN;
 }
 
 
