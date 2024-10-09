@@ -456,7 +456,8 @@ int der(double eta, const double *y, double *dy, void *par) {
         = -(1.0 + dlnHc) * Nulinear.tn(t,ell,y)
         + kv_H * ( Nulinear.tn(t,ell-1,y) / (2*ell-1)
                       - 3.0 * (ell) * Nulinear.tn(t,ell,y) / (2*ell+1)
-                      + 4.0 * (ell-1) * Nulinear.tn(t,ell-1,y) / (2*ell+1)
+                      + 4.0 * (ell-1) * Nulinear.tn(t,ell-1,y) / (2*ell-1)
+                      //+ 4.0 * (ell-1) * Nulinear.tn(t,ell-1,y) / (2*ell+1)
                       - (ell-2) * Nulinear.tn(t,ell-2,y) / (2*ell-3) );
     }
 
