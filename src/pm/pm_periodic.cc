@@ -3535,6 +3535,10 @@ void pm_periodic::calculate_power_spectra(int num)
   for(int i = 0; i < NTYPES; i++)
     typeflag[i] = 1;
 
+//#ifdef NO_CDM_POWER
+//  typeflag[1] = 0;
+//#endif
+
 #ifdef HIERARCHICAL_GRAVITY
   int flag_extra_allocate = 0;
   if(Sp->TimeBinsGravity.ActiveParticleList == NULL)
@@ -3580,6 +3584,20 @@ void pm_periodic::calculate_power_spectra(int num)
             pmforce_do_powerspec(typeflag); /* calculate power spectrum for type i */
           }
       }
+
+#ifdef HDM_POWER
+  if(count_types > 1)
+  {
+    for(int i = 0; i < NTYPES; i++)
+      typeflag[i] = 1;
+
+    typeflag[1] = 0; // Set the CDM flag to 0
+
+    sprintf(power_spec_fname, "%s/powerspecs/powerspec_hdm_%03d.txt", All.OutputDir, num);
+
+    pmforce_do_powerspec(typeflag);
+  }
+#endif
 
 #ifdef HIERARCHICAL_GRAVITY
   if(flag_extra_allocate)

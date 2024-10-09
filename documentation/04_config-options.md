@@ -1284,6 +1284,13 @@ If this is activated, the code will read in a file giving the phase of the cold 
 If this is activated, the code will compute the velocity divergence of the matter particles and output its power spectrum.
 
 -------
+-------
+
+**HDM_POWER**
+
+Computes HDM particle spectrum (removing CDM)
+
+-------
 
 **MFLR_RST**
 

@@ -128,7 +128,8 @@ DOUBLEPRECISION=1                             # if activated and set to 1, use d
 #POWERSPEC_ON_OUTPUT                          # computes a matter power spectrum when the code writes a snapshot output
 #ALLOW_HDF5_COMPRESSION                       # applies HDF5 loss-less compression to selected output fields
 #REDUCE_FLUSH                                 # do not flush the I/O streams of the log-files every system step
-#CB_VELDIV				                      # output velocity divergence for CDM/Baryon particles
+#CB_VELDIV				      # output velocity divergence for CDM/Baryon particles
+#HDM_POWER                                    # computes HDM particle spectrum (removing CDM)
 
 
 #---------------------------------------- On the fly FOF groupfinder
