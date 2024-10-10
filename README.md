@@ -7,7 +7,7 @@ GADGET-4-CPPC
 
 GADGET-4-CPPC is an N-body code to study neutrinos and any hot dark matter 
 with linear response, multifluid and hybrid methods. It is based on the code 
-GADGET-4, that is a massively parallel code for N-body/hydrodynamical
+[GADGET-4](https://wwwmpa.mpa-garching.mpg.de/gadget4), that is a massively parallel code for N-body/hydrodynamical
 cosmological simulations and mainly written by Volker Springel.
 
 The neutrino hybrid method implementations have been performed by Joe Chen, and a previous version of the 
@@ -20,10 +20,11 @@ The hot dark matter multifluid part integrated here has been developed by Amol U
 Documentation
 =============
 
-A documentation on the GADGET-4-CPPC additions and methods is under development.
+A brief documentation on the GADGET-4-CPPC additions and methods cane be found [here](documentation/docs.pdf).
 
 For reference on the physics implemented, please refer to the main papers:
 
+- *Giovanni Pierobon, Markus R. Mosbech, Amol Upadhye, Yvonne Y.Y. Wong*, One trick to treat them all: SuperEasy linear response for any hot dark matter in N-body simulations, [    2410.05816](https://arxiv.org/pdf/2410.05816) 
 - *Joe Zhiyu Chen, Markus R. Mosbech, Amol Upadhye, Yvonne Y.Y. Wong*, Hybrid multi-fluid-particle simulations of the cosmic neutrino background,     [2210.16012](https://arxiv.org/abs/2210.16012) 
 - *Joe Zhiyu Chen, Amol Upadhye, Yvonne Y.Y. Wong*, The cosmic neutrino background as a collection of fluids in large-scale structure simulations,     [2011.12503](https://arxiv.org/abs/2011.12503) 
 - *Joe Zhiyu Chen, Amol Upadhye, Yvonne Y.Y. Wong*, One line to run them all: SuperEasy massive neutrino linear response in N-body simulations, [    2011.12504](https://arxiv.org/abs/2011.12504) 
