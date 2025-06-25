@@ -1257,19 +1257,23 @@ directions) or of spatially variable resolution.
 
 **ADDITIONAL_GRID**
 
-If this is activated, an additional set of particles are created on a cartesian grid, with the particle type number incremented by 1.
+This is the switch for turning on the hybrid mode. It tells the code that it should expect a snapshot to be read in as IC, but also still run the NGENIC routine as more particles are to be inserted. In the stock version of gadget-4, NGENIC and reading a snapshot IC are conflicting options. However, in the hybrid version, NGENIC needs to be switched on for the creation of neutrinos/HDM alongside ADDITIONAL GRID. On the other hand, this option will conflict with the CREATE GRID option, so do not turn both.
+
+CREATE GRID is used at the start of a linear response or CDM only simulation, while ADDITIONAL GRID is only used for restarted hybrid runs.
+
+The allvars.cc parameter input reading will expect all the usual NGENIC parameters and in addition two new parameters: N_tau_part and Nu_part_deg.
 
 -------
 
 **THERMAL_VEL_IC**
 
-If this is activated, the particles are given a thermal velocity in a random direction, with an amplitude given through the stream_vel parameter.
+This is a necessary option when ADDITIONAL GRID is chosen. The NGENIC routine will add a randomly drawn zeroth-order thermal velocity to each ‘new’ particle converted. A new run-time parameter, stream vel is therefore expected.
 
 -------
 
 **CB_PHASE**
 
-If this is activated, the code will read in a file giving the phase of the cold matter particles. This allows the neutrino initial conditions to be generated in phase with the CDM, rather than from a random seed.
+This is an additional option when ADDITIONAL GRID is chosen. The NGENIC routine will not generate new random numbers for the 3D phase of the particles if this is activated. Instead, it will look for a .dat file containing the snapshot’s phase information. The phase of all matter N-body particles in the snapshot (including existing HDM particles) will be used to initialise the ‘new’ HDM particles. The allvars.cc parameter input reading will expect two new parameters: deltagridFILE, and CBPowerSpectrumFile.
 
 -------
 
@@ -1281,7 +1285,8 @@ If this is activated, the code will compute the velocity divergence of the matte
 
 **MFLR_RST**
 
-blah
+This is an option for both linear response and hybrid runs, therefore does not require ADDITIONAL GRID to also be chosen. If chosen, the multi-fluid linear response perturbation module will not compute a new set of perturbations at the start of the simulation, and instead look for a .dat file containing the information. This is necessary if a simulation containing multi-fluid neutrinos is restarted for any reason.
+The usual initialisation procedure will be completely linear and thus lose any response to non-linear potential the neutrinos would have accumulated prior to the restart. The allvars.cc parameter input reading will therefore expect a new parameter, ynuFile.
 
 -------
 
@@ -1289,8 +1294,7 @@ blah
 
 **N_TAU**
 
-This option selects the number of momenta (flows) or the 
-multi fluid calculation.
+This option sets the number of HDM flows, historically defined as N_tau, used for the MFLR and hybrid runs.
 
 -------
 
@@ -1298,8 +1302,7 @@ multi fluid calculation.
 
 **N_MU**
 
-This option selects the number of legendre multipoles for the 
-multi fluid calculation.
+This option sets the number of Legendre multipole moments N_mu included in the HDM multifluid equations, used for the MFLR and hybrid runs
 
 -------
 **GENERATE_GAS_IN_ICS**
