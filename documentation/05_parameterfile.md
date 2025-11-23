@@ -383,35 +383,58 @@ possible, and intermediate forms in principle as well.
 -------
 
 **CBPowerSpectrumFile**
-Input CB power spectrum corresponding to the snapshot used in the restart run. This is only needed if CB_PHASE option is chosen.
+This is an additional option when ADDITIONAL_GRID is chosen along eith CB_PHASE. The NGENIC
+routine will not generate new random numbers for the 3D phase of the particles if
+this is activated. Instead, it will look for a .dat file containing the snapshot’s phase
+information. The phase of all matter N-body particles in the snapshot (including
+existing HDM particles) will be used to initialise the ‘new’ HDM particles. The
+allvars.cc parameter input reading will expect two new parameters: deltagridFILE,
+and CBPowerSpectrumFile.
 
 -------
 
 **GrowthRateFile** 
-Input growth rate f = delta / theta. This is the corresponding growth rate to the input PowerSpectrumFile.
+A .txt file formatted as %g %g. The first column is the wave number
+k in h/Mpc. The second column is the growth rate. The information is necessary for
+linear response and hybrid mode of running. The inclusion of massive neutrinos implies
+the growth factor for CDM+baryons and the neutrinos themselves are k-dependent.
+The initialisation of the velocity field can no longer be derived from the density field
+using a multiplicative factor. The NGENIC routine would initialise a new θ field for
+extracting the initial velocity. This for linear response mode is calculated from the
+MuFLR code (or by using the htools automation scripts). In hybrid mode of running, this
+can be computed for a particular flow using the outputs in the neutrino stream data
+output folder. In the folder, the monopole velocity divergence and density contrast of
+each flow is recorded at the time of a snapshot output. 
+This is the corresponding growth rate to the input PowerSpectrumFile.
 
 -------
 
 **NLR** 0
-A switch used to select neutrino linear response methods. 0 = no neutrinos, 1 = supereasy, 2 = multi-fluid.
+An integer that indicates the linear response type modification in Poisson equation, if set to zero, no HDM method is used. Set to 2 for hybrid simulations, as the particles are initialised from the MultiFluid flows.
+– NLR=1: SuperEasy linear response, introduced in [arxiv:2011.12504].
+– NLR=2: MultiFluid linear response, introduced in[arxiv:2011.12503].
+– NLR=3: Generalised SuperEasy linear response, introduced in [arxiv:2410.05816].
 
 -------
 
-**NumHDM**
+**NumHDM** 0
+Effective number of massive HDM species.
 
 -------
 
 **MassHDM** 0
-The mass of the hot dark matter particle in eV.
+A floating point number specifying the neutrino/HDM mass in eV. For effective HDM distributions, this corresponds to the effective mass.
 
 -------
 
 **N_tau_part** 0
-The number of neutrino streams that will be treated with particles in the simulation. Note, this includes the stream that is being converted in that particular run.
+An integer number specifying the total number of neutrino/HDM N-body particle types there are in the simulation, including the current batch being converted.
+In the stock gadget-4 implementation, the number of particles is set by user by providing a value for the NTYPES compile-time option. type0 and type1 are reserved for hydrodynamic particles and CDM+baryons, respectively, while type2 and higher are free to be assigned HDM particles
 
 -------
 
 **Nu_part_deg**
+An integer number. It specifies how many multi-fluid flows are in each of the batch specified by N tau part. There are occasions where in one conversion several flows are averaged into one representative flow to be tracked by a single batch of N-body neutrino particles, however with an efficient momentum binning scheme, such Gauss-Laguerre, it is recommended to convert one stream per particle type, therefore setting Nu part deg to 1. The user needs carefully assign this value, as it is used to exclude the correct number of flows from the linear response perturbation module to avoid double counting.
 
 -------
 
@@ -424,28 +447,30 @@ The number of neutrino streams that will be treated with particles in the simula
 -------
 
 **OmegaNuLin** 0
-The energy density of neutrinos that are tracked by linear response method chosen by NLR parameter. This parameter alongside OmegaNuPart should add up to the total massive neutrino density in the cosmology.
->>>>>>> multiple-vels
+ floating point number. The density parameter of neutrinos that are in multi-fluid perturbative representation in the simulation. See above for precautions to take regarding this parameter when running in hybrid mode. In linear response mode this is equal to Omega_HDM.
 
 -------
 
 **OmegaNuPart** 0
-The energy density of neutrinos that are tracked as N-body particles. This parameter is essentially used to determine the neutrino particle mass.
+TOmegaNuPart: A floating point number. The density parameter of neutrinos that are in the representation in the simulation. OmegaNuPart + OmegaNuLin (see below) should add up to the physical total Ων/hdm in the cosmology specified. When converting neutrinos/HDM from multi-fluid perturbations to N-body particles, a fraction of OmegaNuLin will need to be transferred to OmegaNuPart. The code will not check this for you, if you enter it wrong, the neutrino N-body particle masses will be off. This might be changed in the future.
 
 -------
 
 **deltagridFILE**
-This is a binary .dat file that contains the full 3-D density grid of the snapshot used in the restart run. This allows the neutrino initial conditions to be generated in phase with the CDM, rather than from a random seed.
+A .dat file formatted in binary. The content contains the 3D density contrast array of all the N-body particles present in the simulation corresponding to a snapshot. One such file is written every time a snapshot is outputted (more specifically, when a power spectrum output is written, as it is part of the power spectrum estimation routine). The information is used in the NGENIC routine to extract the 3D phase of the snapshot. The neutrino particles are then initialised with that exact phase, rather than redrawing the random numbers. This is technically redundant information, since the snapshot is read in as part of the hybrid restart IC anyway. The choice to double up on the input is purely for coding convenience, as it is much easier than trying to extract the phase from the snapshot during the NGENIC routine. This might be changed in the future.
 
 -------
 
 **StreamVelListFilename** 
 Path to file containing the comoving Lagrangian velocity of the neutrino particles to be converted. Given in units of km/s. stream_vel = tau / m. IC module will convert it to physical velocity, then into Gadget internal units later.
 
+It is used with the THERMAL VEL IC option, and the velocities are randomly selected to set the magnitude of the velocity assigned to each new HDM
+particle. The NGENIC routine will only draw a unit vector for direction, which is then rescaled one the values in magnitude. The velocity is unique for each neutrino fluid flow in the multi-fluid decomposition, so when converting a single flow only one velocity value needs to be provided.
+
 -------
 
 **ynuFile**
-This is a binary .dat file that contains the full Multi-Fluid perturbation data. This is used in any restarted mflr runs, to ensure the linear response neutrinos retain their nonlinear info from the previous run. The MFLR module will not reinitialise in a restarted run, and rely on the info in this file instead.
+A .dat file formatted in binary. The content contains all the perturbation information of the multi-fluid linear response corresponding to a snapshot. One such file is written every time a snapshot is outputted. The information is used by the code to restart the multi-fluid module without re-initialising the neutrino perturbations. It is important for all restarted runs in MFLR and hybrid mode, as it is necessary for a consistent evolution of the linear response equations.
 
 -------
  
