@@ -26,7 +26,7 @@ fi
 cp htools/templates/param_mf_template.txt $1
 
 echo 'Building Gadget4-mf-restart ...'
-make -j CONFIG=Config_mf_restart.sh EXEC=$1/Gadget4-mf-restart BUILD_DIR=$1/build_mf >> $1/info/compilation_mf.txt 2> $1/info/issues_mf.txt 
+make -j2 CONFIG=Config_mf_restart.sh EXEC=$1/Gadget4-mf-restart BUILD_DIR=$1/build_mf >> $1/info/compilation_mf.txt 2> $1/info/issues_mf.txt
 
 sleep 1
 

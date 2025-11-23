@@ -66,8 +66,10 @@ EXEC = $(DIR)/Gadget4
 CONFIG = $(DIR)/Config.sh
 BUILD_DIR = $(DIR)/build
 else
-EXEC   = Gadget4
-CONFIG   = Config.sh
+#EXEC   = Gadget4
+#CONFIG   = Config.sh
+EXEC   = Gadget4_hybrid_restart
+CONFIG   = Config_hybrid_restart.sh
 BUILD_DIR = build
 endif
 

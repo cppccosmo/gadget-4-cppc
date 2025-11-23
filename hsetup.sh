@@ -7,7 +7,7 @@ export MuFLRPath=$cdir/MultiFluid
 ########################################################
 
 # Modify your path here 
-export ClassPath=~/class_public
+export ClassPath=~/MultiFluidCodes/class_public
 
 # Load modules
 source load_modules.sh $2
