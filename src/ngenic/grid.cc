@@ -142,7 +142,7 @@ void ngenic::additional_grid(void)
       NewPart = partTotal - partPerTask * (NTask - 1);
     }
 
-  printf("NewPart on Task %d is %d\n", ThisTask, NewPart);
+  //printf("NewPart on Task %d is %d\n", ThisTask, NewPart);
 
   int max_load, max_sphload;
   MPI_Allreduce(&Sp->NumPart, &max_load, 1, MPI_INT, MPI_MAX, Communicator);

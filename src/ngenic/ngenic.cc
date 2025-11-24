@@ -1240,7 +1240,14 @@ void ngenic::ngenic_readout_mass(fft_real *grid)
 
   if(All.N_tau_part > 0)
     {
-      masstot = (All.OmegaNuPart / All.N_tau_part) * 3 * All.Hubble * All.Hubble / (8 * M_PI * All.G) * All.BoxSize * All.BoxSize * All.BoxSize;
+      int    flow_n = All.N_tau_part - 1;
+      double flow_energy = Nulinear.omega_t(flow_n);
+      double vol = All.BoxSize * All.BoxSize * All.BoxSize;
+      double norm =  3 * All.Hubble * All.Hubble / (8 * M_PI * All.G);
+
+      masstot = flow_energy * norm * vol;
+
+      //masstot = (All.OmegaNuPart / All.N_tau_part) * 3 * All.Hubble * All.Hubble / (8 * M_PI * All.G) * All.BoxSize * All.BoxSize * All.BoxSize;
     } else {
       mpi_printf("no particle neutrinos are present\n");
       masstot = 0;

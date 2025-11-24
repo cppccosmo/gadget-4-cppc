@@ -4080,7 +4080,7 @@ void pm_periodic::pmforce_measure_powerspec(int flag, int *typeflag)
           if(ThisTask == 0)
             {
               printf("Writing rhogrid phase info\n");
-              printf("Task %d writing to file\n", ThisTask);
+              //printf("Task %d writing to file\n", ThisTask);
 
               char buf[MAXLEN_PATH_EXTRA];
               sprintf(buf, "%s/delta_grid", All.OutputDir);
@@ -4112,7 +4112,7 @@ void pm_periodic::pmforce_measure_powerspec(int flag, int *typeflag)
             {
               if(ThisTask == nt)
                 {
-                  printf("Task %d writing to file\n", ThisTask);
+                  //printf("Task %d writing to file\n", ThisTask);
 
                   sprintf(delta_grid_fname, "%s/delta_grid/delta_grid_%.3f.dat", All.OutputDir, All.Time);
 
@@ -4122,7 +4122,7 @@ void pm_periodic::pmforce_measure_powerspec(int flag, int *typeflag)
                       Terminate("can't open file '%s' on task %d\n", delta_grid_fname, ThisTask);
                     }
 
-                  printf("Dgrid_counter = %ld on Task %d\n", Dgrid_counter, ThisTask);
+                  //printf("Dgrid_counter = %ld on Task %d\n", Dgrid_counter, ThisTask);
                   fwrite(Dgrid_local, sizeof(fft_real), Dgrid_counter, fdgrid);
                   //fwrite(Dgrid_local, sizeof(fft_real), maxfftsize, fdgrid);
 
